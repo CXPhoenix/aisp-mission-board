@@ -8,5 +8,8 @@ wheels/
 
 # Virtual environments
 .venv
-
 uv.lock
+
+# for security
+*.env
+data/*[!.gitkeep]

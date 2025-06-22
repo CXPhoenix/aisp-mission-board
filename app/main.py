@@ -1,22 +1,25 @@
-from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from shared.odm import MongoDbClient
 
-DOCS_URL=None # default is `/docs`
-REDOC_URL=None # default is `/redoc`
-OPENAPI_URL=None # default is `/openapi.json`
+from fastapi import FastAPI
+from configs import sys_conf, app_conf
+from shared import MongoDbClient, SessionMiddleware
 
+# Open API Doc 參數設定
+DOCS_URL = None  # default is `/docs`
+REDOC_URL = None  # default is `/redoc`
+OPENAPI_URL = None  # default is `/openapi.json`
+
+# Server 開始與結束時的事件設定
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # TODO: Database connect
+    # TODO: Model Import
     mclient = MongoDbClient()
     yield
-    # TODO: Database connection close
     mclient.close_connection()
 
+# FastAPI 建立
 app = FastAPI(
-    docs_url=DOCS_URL,
-    redoc_url=REDOC_URL,
-    openapi_url=OPENAPI_URL,
-    lifespan=lifespan
+    docs_url=DOCS_URL, redoc_url=REDOC_URL, openapi_url=OPENAPI_URL, lifespan=lifespan
 )
+
+app.add_middleware(SessionMiddleware, secret_key=sys_conf.session_secret)

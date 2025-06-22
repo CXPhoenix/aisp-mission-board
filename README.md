@@ -1,4 +1,4 @@
-# FHSH AiSP Task Board
+# FHSH AiSP Mission Board
 
 > [!NOTE]
 > Author: @CXPhoenix

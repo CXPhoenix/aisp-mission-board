@@ -1,0 +1,47 @@
+version: 1
+disable_existing_loggers: False
+formatters:
+  default:
+    (): shared.logs.UTC8DefaultFormatter
+    format: "[%(asctime)s] %(levelprefix)s %(message)s"
+  access:
+    (): shared.logs.UTC8AccessFormatter
+    format: '[%(asctime)s] %(levelprefix)s %(client_addr)s - "%(request_line)s" %(status_code)s'
+handlers:
+  default:
+    formatter: default
+    class: logging.StreamHandler
+    stream: ext://sys.stderr
+  access:
+    formatter: access
+    class: logging.StreamHandler
+    stream: ext://sys.stdout
+  default_file_handler:
+    class: logging.handlers.RotatingFileHandler
+    level: INFO
+    formatter: default
+    filename: /temp/logs/event.log
+    maxBytes: 10485760 #10MB
+    backupCount: 5
+    encoding: utf8
+  access_file_handler:
+    class: logging.handlers.RotatingFileHandler
+    level: INFO
+    formatter: access
+    filename: /temp/logs/access.log
+    maxBytes: 10485760 #10MB
+    backupCount: 5
+    encoding: utf8
+loggers:
+  uvicorn.error:
+    level: INFO
+    handlers:
+      - default
+      # - default_file_handler
+    propagate: no
+  uvicorn.access:
+    level: INFO
+    handlers:
+      - access
+      # - access_file_handler
+    propagate: no
