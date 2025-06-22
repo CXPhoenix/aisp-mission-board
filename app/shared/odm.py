@@ -1,9 +1,8 @@
+from beanie import Document, init_beanie
 from configs import db_conf
-from beanie import init_beanie, Document
 from motor.motor_asyncio import AsyncIOMotorClient
-import logging
 
-console = logging.getLogger('uvicorn.error')
+from .logs import console
 
 
 class MongoDbClient:
@@ -12,13 +11,13 @@ class MongoDbClient:
         self._client = AsyncIOMotorClient(
             host=db_conf.host,
             port=db_conf.port,
-            username=db_conf.username,
-            password=db_conf.password,
+            username=db_conf.initdb_root_username,
+            password=db_conf.initdb_root_password,
             authSource=db_conf.auth_source,
         )
 
     async def init_database_connection(
-        self, database_name: str, documents: list[Document]=[]
+        self, database_name: str, documents: list[Document] = []
     ) -> "MongoDbClient":
         await init_beanie(
             database=self._client[database_name], document_models=documents
