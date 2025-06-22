@@ -1,0 +1,62 @@
+name: aisp-mission-board
+
+services:
+  app:
+    image: fhsh/mission-board:latest
+    build:
+      dockerfile: app.Dockerfile
+      context: .
+    restart: always
+    env_file:
+      - env.d/app.env
+      - env.d/mongo.env
+    networks:
+      - app
+      - tunnel
+    expose:
+      - 8000 
+    # for development
+    volumes:
+      - ./app:/app
+      - ./data/logs:/temp/logs
+  
+  mongo:
+    image: mongo:latest
+    restart: always
+    env_file:
+      - env.d/mongo.env
+    networks:
+      - app
+      - mngr
+    expose:
+      - 27017
+    volumes:
+      - ./data/db:/data/db
+  
+  me:
+    image: mongo-express:latest
+    restart: always
+    depends_on:
+      - mongo
+    env_file:
+      - env.d/me.env
+    networks:
+      - mngr
+      - tunnel
+    expose:
+      - 8081
+  
+  cloudflare:
+    image: cloudflare/cloudflared:latest
+    restart: always
+    env_file:
+      - env.d/cf.env
+    networks:
+      - tunnel
+
+networks:
+  app:
+    internal: true
+  mngr:
+    internal: true
+  tunnel:
