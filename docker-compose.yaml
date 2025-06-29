@@ -9,16 +9,27 @@ services:
     restart: always
     env_file:
       - env.d/app.env
-      - env.d/mongo.env
     networks:
       - app
       - tunnel
     expose:
       - 8000 
-    # for development
     volumes:
-      - ./app:/app
+      - ./app:/app # for development
       - ./data/logs:/temp/logs
+  
+  tw:
+    image: fhsh/mission-board-tw:latest
+    build:
+      dockerfile: tw.Dockerfile
+      context: .
+    depends_on:
+      - app
+    volumes:
+      - ./app/public/assets:/tw/dist
+      - ./app/templates:/tw/templates
+    command: ['pnpx', '@tailwindcss/cli', '-i', './src/input.css', '-o', './dist/style.css', '--optimize', '--watch=always'] # for development
+    # command: pnpm build # for production
   
   mongo:
     image: mongo:latest
@@ -46,13 +57,14 @@ services:
     expose:
       - 8081
   
-  cloudflare:
+  cf:
     image: cloudflare/cloudflared:latest
     restart: always
     env_file:
       - env.d/cf.env
     networks:
       - tunnel
+    command: tunnel run
 
 networks:
   app:

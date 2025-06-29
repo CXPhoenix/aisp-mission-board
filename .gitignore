@@ -13,3 +13,7 @@ uv.lock
 # for security
 *.env
 data/*[!.gitkeep]
+
+# for tailwindcss
+node_modules/
+*lock.yaml
