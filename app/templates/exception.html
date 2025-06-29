@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="h-[100dvh] flex flex-col justify-center items-center gap-4">
+    <h1 class="text-5xl font-bold">{{ detail.exception_title }}</h1>
+    <p class="text-2xl">{{ detail.exception_desc | safe }}</p>
+    <a href="{{ detail.return_page.url }}" class="bg-red-700 rounded-lg py-4 px-7 text-xl text-stone-200">回到{{ detail.return_page.name }}</a>
+</div>
+{% endblock content %}

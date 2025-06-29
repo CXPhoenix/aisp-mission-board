@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      {% if webpage.subtitle %}{{ webpage.subtitle }} | {% endif %}{{
+      webpage.title }}
+    </title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('public', path='/assets/style.css') }}?v={{ css_timestamp }}"
+    />
+    {% block css_content %} {% endblock css_content %} {% block pre_js_content
+    %} {% endblock pre_js_content %}
+  </head>
+  <body>
+    {% block content %} {% endblock content %} 
+    <script type="module" src="{{ url_for('public', path='/assets/flowbite/flowbite.min.js') }}"></script>
+    {% block js_content %} {%
+    endblock js_content %}
+  </body>
+</html>
