@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 from typing import Literal, Optional
 
 import jwt
@@ -8,9 +8,7 @@ from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
 from starlette.datastructures import MutableHeaders
 from starlette.types import Message, Receive, Scope, Send
 
-
-def utc8now():
-    return datetime.now(timezone(timedelta(hours=8)))
+from .time_funcs import get_now
 
 
 class SessionMiddleware:
@@ -64,7 +62,7 @@ class SessionMiddleware:
                     else:
                         session_data = dict(scope["session"])
                     if "exp" not in session_data:
-                        now = utc8now()
+                        now = get_now()
                         now += timedelta(seconds=self._max_age)
                         scope["session"]["exp"] = now
                     data = jwt.encode(session_data, self._secret_key, "HS256")
