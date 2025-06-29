@@ -18,7 +18,7 @@ class Product(Document):
     user_can_hold: Annotated[
         int, Field(0, ge=0, description="0 表示玩家可持有無限數量")
     ]
-    user_can_use: Annotated[bool, Field(True, description="玩家是否可以申請使用。有些東西玩家不能使用，如「成就徽章」等")]
+    user_can_use: Annotated[bool, Field(True, description="玩家是否可以使用。有些東西玩家不能使用，如「成就徽章」等")]
 
     def can_buy(cond_func: Callable[..., bool], **cond_params: Any) -> bool:
         """判斷除了售價、庫存、可買等級及角色可擁有數量等條件外的購買條件。
