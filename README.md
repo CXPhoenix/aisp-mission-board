@@ -14,7 +14,7 @@
 
 ## 專案簡介
 
-AiSP Mission Board 是為人工智慧學生計畫 (Artificial Intelligence Student Program) 設計的任務管理系統。採用 FastAPI 框架搭配 MongoDB 資料庫，提供完整的任務管理、使用者管理及遊戲化功能。
+AiSP Mission Board 是為復興高中 AI 資安學程 (FHSH AI & Cybersecurity Program) 設計的遊戲化任務管理系統。採用 FastAPI 框架搭配 MongoDB 資料庫，提供完整的任務管理、使用者管理及遊戲化功能。
 
 ### 核心功能
 
