@@ -36,7 +36,11 @@ class SessionStatus(IntEnum):
     NORMAL = 0
     LOGIN_FAILED = 1
 
-
+class MissionReviewState(IntEnum):
+    PENDDING = 0b001
+    APPROVED = 0b100
+    REJECTED = 0b010
+    
 class UserSessionData(BaseModel):
     model_config = ConfigDict(extra="ignore")
 

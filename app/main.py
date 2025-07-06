@@ -1,4 +1,3 @@
-import traceback
 from contextlib import asynccontextmanager
 from typing import Any
 
@@ -6,11 +5,12 @@ from configs import app_conf, sys_conf
 from fastapi import FastAPI, Request, status
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from models import OwnItem, Product, TransactionRecord, UseItemRecord, User
-from pages import auth_pages, mall_pages, mission_pages, user_pages
+from models import OwnItem, Product, TransactionRecord, UseItemRecord, User, Mission, PendingMissionReview, MissionInfo
+from pages import auth_pages, mall_pages, mission_pages, user_pages, admin_pages
 from shared import SessionMiddleware, mclient
 from shared.types import HTTPExceptionName
 from shared.webpage import WebPage
+from shared.types import Role
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 # Open API Doc 參數設定
@@ -19,16 +19,31 @@ REDOC_URL = None  # default is `/redoc`
 OPENAPI_URL = None  # default is `/openapi.json`
 
 
+async def init_testing_user() -> None:
+    user = await User.find(User.campus_id == "0826").first_or_none()
+    if user is None:
+        await User(campus_id="0826", name="陳晉", password="1234qwerasdf", ).save()
+
+
 # Server 開始與結束時的事件設定
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # TODO: Model Import
     mclient.build_connection()
+    await mclient.init_database_connection("App-Config", [MissionInfo])
     await mclient.init_database_connection(app_conf.userdb, [User, OwnItem])
+    # add admin role to user
+    for admin_user in app_conf.admins:
+        if (user := await User.find(User.campus_id == admin_user).first_or_none()) is not None:
+            if Role.ADMIN not in user.roles:
+                user.roles.append(Role.ADMIN)
+                await user.save()
     await mclient.init_database_connection(app_conf.malldb, [Product])
     await mclient.init_database_connection(
         app_conf.recorddb, [TransactionRecord, UseItemRecord]
     )
+    await mclient.init_database_connection("AiSP-Mission", [Mission, PendingMissionReview])
+    
+    await init_testing_user()
     yield
     mclient.close_connection()
 
@@ -51,12 +66,12 @@ def custom_http_exception_handler(request: Request, exc):
     # TODO: 處理不同 status_code 的 exception_desc
     exception_detail = {
         "exception_title": f"{exc.status_code} {exception_name}",
-        # TODO: Development, production mode need to delete.
-        "exception_desc": exception_desc,
         "return_page": {
             "url": request.url_for("index_page"),
             "name": "首頁",
         },
+        # TODO: Development, production mode need to delete.
+        "exception_desc": exception_desc,
     }
     if return_page:
         exception_detail.update(return_page)
@@ -93,3 +108,4 @@ app.include_router(auth_pages.router)
 app.include_router(mission_pages.router)
 app.include_router(mall_pages.router)
 app.include_router(user_pages.router)
+app.include_router(admin_pages.router)

@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- 標題區域 -->
+        <div class="sm:flex sm:items-center sm:justify-between mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">任務管理</h1>
+                <p class="mt-2 text-sm text-gray-600">管理系統中的所有任務</p>
+            </div>
+            <div class="mt-4 sm:mt-0">
+                <a href="{{ url_for('mission_create_page') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                    <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    新增任務
+                </a>
+            </div>
+        </div>
+
+        <!-- 任務列表 -->
+        <div class="bg-white shadow overflow-hidden sm:rounded-md">
+            {% if missions %}
+                <ul class="divide-y divide-gray-200">
+                    {% for mission in missions %}
+                    <li>
+                        <div class="px-4 py-4 flex items-center justify-between">
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-2">
+                                        <h3 class="text-lg font-medium text-gray-900">{{ mission.name }}</h3>
+                                        {% if mission.is_repetitive %}
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                            </svg>
+                                            可重複
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        {% if mission.tags %}
+                                            {% for tag in mission.tags %}
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                {{ tag }}
+                                            </span>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <p class="mt-1 text-sm text-gray-600">{{ mission.description }}</p>
+                                <div class="mt-2 flex items-center text-sm text-gray-500 space-x-4">
+                                    <span class="flex items-center">
+                                        <svg class="mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                                        </svg>
+                                        {{ mission.rewards }} 代幣
+                                    </span>
+                                    <span class="flex items-center">
+                                        <svg class="mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                        </svg>
+                                        等級 {{ mission.accepted_min_level }}+
+                                    </span>
+                                    {% if mission.invest > 0 %}
+                                    <span class="flex items-center">
+                                        <svg class="mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                        </svg>
+                                        押金 {{ mission.invest }}
+                                    </span>
+                                    {% endif %}
+                                    <span class="flex items-center">
+                                        <svg class="mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        {{ mission.expired_time.strftime('%Y-%m-%d %H:%M') }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="ml-4 flex items-center space-x-2">
+                                <a href="{{ url_for('mission_edit_page', mission_id=mission.id) }}" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                    編輯
+                                </a>
+                                <form method="POST" action="{{ url_for('mission_delete_action', mission_id=mission.id) }}" class="inline" onsubmit="return confirm('確定要刪除這個任務嗎？')">
+                                    <button type="submit" class="inline-flex items-center px-3 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50">
+                                        刪除
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="text-center py-12">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900">沒有任務</h3>
+                    <p class="mt-1 text-sm text-gray-500">開始創建第一個任務吧！</p>
+                    <div class="mt-6">
+                        <a href="{{ url_for('mission_create_page') }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                            <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            新增任務
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- 返回控制台 -->
+        <div class="mt-6">
+            <a href="{{ url_for('admin_index_page') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                返回控制台
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock content %}

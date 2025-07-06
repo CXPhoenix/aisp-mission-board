@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- 標題區域 -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">審核詳情</h1>
+            <p class="mt-2 text-sm text-gray-600">查看任務提交的詳細資訊</p>
+        </div>
+
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <!-- 任務資訊 -->
+            {% if mission %}
+            <div class="bg-white shadow sm:rounded-lg">
+                <div class="px-4 py-5 sm:p-6">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">任務資訊</h3>
+                    <dl class="grid grid-cols-1 gap-x-4 gap-y-6">
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">任務名稱</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ mission.name }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">任務描述</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ mission.description }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">獎勵</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ mission.rewards }} 代幣</dd>
+                        </div>
+                    </dl>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- 用戶資訊 -->
+            {% if user %}
+            <div class="bg-white shadow sm:rounded-lg">
+                <div class="px-4 py-5 sm:p-6">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">提交用戶</h3>
+                    <dl class="grid grid-cols-1 gap-x-4 gap-y-6">
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">姓名</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ user.name }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">學號</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ user.campus_id }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">等級</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ user.level }}</dd>
+                        </div>
+                    </dl>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- 審核資訊 -->
+        <div class="mt-6 bg-white shadow sm:rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">審核資訊</h3>
+                <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">提交時間</dt>
+                        <dd class="mt-1 text-sm text-gray-900">{{ review.submitted_time.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">審核狀態</dt>
+                        <dd class="mt-1">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                {% if review.review_status.value == 0b001 %}bg-yellow-100 text-yellow-800{% endif %}
+                                {% if review.review_status.value == 0b100 %}bg-green-100 text-green-800{% endif %}
+                                {% if review.review_status.value == 0b010 %}bg-red-100 text-red-800{% endif %}">
+                                {% if review.review_status.value == 0b001 %}等待審核{% endif %}
+                                {% if review.review_status.value == 0b100 %}已通過{% endif %}
+                                {% if review.review_status.value == 0b010 %}已拒絕{% endif %}
+                            </span>
+                        </dd>
+                    </div>
+                    {% if review.review_time %}
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">審核時間</dt>
+                        <dd class="mt-1 text-sm text-gray-900">{{ review.review_time.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
+                    </div>
+                    {% endif %}
+                    {% if review.reviewer_id %}
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">審核者</dt>
+                        <dd class="mt-1 text-sm text-gray-900">{{ review.reviewer_id }}</dd>
+                    </div>
+                    {% endif %}
+                    {% if review.review_comments %}
+                    <div class="sm:col-span-2">
+                        <dt class="text-sm font-medium text-gray-500">審核意見</dt>
+                        <dd class="mt-1 text-sm text-gray-900 bg-gray-50 p-3 rounded-md">{{ review.review_comments }}</dd>
+                    </div>
+                    {% endif %}
+                </dl>
+            </div>
+        </div>
+
+        <!-- 審核操作 -->
+        {% if review.review_status.value == 0b001 %}
+        <div class="mt-6 bg-white shadow sm:rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">審核操作</h3>
+                <div class="flex space-x-4">
+                    <!-- 通過 -->
+                    <form method="POST" action="{{ url_for('review_approve_action', review_id=review.id) }}" class="flex-1">
+                        <div class="mb-4">
+                            <label for="approve_comments" class="block text-sm font-medium text-gray-700">審核意見（可選）</label>
+                            <textarea name="comments" id="approve_comments" rows="3" 
+                                      class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                                      placeholder="審核通過的意見..."></textarea>
+                        </div>
+                        <button type="submit" 
+                                class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700">
+                            <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            通過審核
+                        </button>
+                    </form>
+
+                    <!-- 拒絕 -->
+                    <form method="POST" action="{{ url_for('review_reject_action', review_id=review.id) }}" class="flex-1">
+                        <div class="mb-4">
+                            <label for="reject_comments" class="block text-sm font-medium text-gray-700">拒絕原因 <span class="text-red-500">*</span></label>
+                            <textarea name="comments" id="reject_comments" rows="3" required
+                                      class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 sm:text-sm"
+                                      placeholder="請說明拒絕的原因..."></textarea>
+                        </div>
+                        <button type="submit" 
+                                class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700">
+                            <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                            拒絕審核
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 返回按鈕 -->
+        <div class="mt-6 flex space-x-3">
+            <a href="{{ url_for('review_list_page') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                返回審核列表
+            </a>
+            <a href="{{ url_for('admin_index_page') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                返回控制台
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock content %}

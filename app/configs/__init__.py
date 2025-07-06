@@ -31,6 +31,7 @@ class AppConf(EnvConf):
     userdb: str = "<your-userdb>"
     malldb: str = "<your-malldb>"
     recorddb: str = "<your-recorddb>"
+    mission: str = "<your-missiondb>"  # 這個會升級
     admins: str | list[str] = []
 
     @field_validator("admins", mode="after")

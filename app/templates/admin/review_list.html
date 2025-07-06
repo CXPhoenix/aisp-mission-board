@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- 標題區域 -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">任務審核</h1>
+            <p class="mt-2 text-sm text-gray-600">審核用戶提交的任務完成申請</p>
+        </div>
+
+        <!-- 審核列表 -->
+        <div class="bg-white shadow overflow-hidden sm:rounded-md">
+            {% if reviews %}
+                <ul class="divide-y divide-gray-200">
+                    {% for review in reviews %}
+                    <li>
+                        <div class="px-4 py-4">
+                            <div class="flex items-center justify-between">
+                                <div class="flex-1">
+                                    <div class="flex items-center justify-between">
+                                        <h3 class="text-lg font-medium text-gray-900">{{ review.mission_name }}</h3>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                            {% if review.review_status.value == 0b001 %}bg-yellow-100 text-yellow-800{% endif %}
+                                            {% if review.review_status.value == 0b100 %}bg-green-100 text-green-800{% endif %}
+                                            {% if review.review_status.value == 0b010 %}bg-red-100 text-red-800{% endif %}">
+                                            {% if review.review_status.value == 0b001 %}等待審核{% endif %}
+                                            {% if review.review_status.value == 0b100 %}已通過{% endif %}
+                                            {% if review.review_status.value == 0b010 %}已拒絕{% endif %}
+                                        </span>
+                                    </div>
+                                    <div class="mt-2 flex items-center text-sm text-gray-500 space-x-4">
+                                        <span class="flex items-center">
+                                            <svg class="mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                            </svg>
+                                            {{ review.user_name }} ({{ review.campus_id }})
+                                        </span>
+                                        <span class="flex items-center">
+                                            <svg class="mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            {{ review.submitted_time.strftime('%Y-%m-%d %H:%M') }}
+                                        </span>
+                                        {% if review.review_time %}
+                                        <span class="flex items-center">
+                                            <svg class="mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            審核於 {{ review.review_time.strftime('%Y-%m-%d %H:%M') }}
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                    {% if review.review_comments %}
+                                    <div class="mt-2 text-sm text-gray-600 bg-gray-50 p-2 rounded">
+                                        <strong>審核意見：</strong>{{ review.review_comments }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="ml-4 flex items-center space-x-2">
+                                    <a href="{{ url_for('review_detail_page', review_id=review.id) }}" 
+                                       class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                        查看詳情
+                                    </a>
+                                    {% if review.review_status.value == 0b001 %}
+                                    <form method="POST" action="{{ url_for('review_approve_action', review_id=review.id) }}" class="inline">
+                                        <input type="hidden" name="comments" value="">
+                                        <button type="submit" 
+                                                class="inline-flex items-center px-3 py-2 border border-green-300 text-sm font-medium rounded-md text-green-700 bg-white hover:bg-green-50"
+                                                onclick="const comment = prompt('審核意見（可選）:'); if (comment !== null) { this.previousElementSibling.value = comment; return true; } return false;">
+                                            通過
+                                        </button>
+                                    </form>
+                                    <form method="POST" action="{{ url_for('review_reject_action', review_id=review.id) }}" class="inline">
+                                        <input type="hidden" name="comments" value="">
+                                        <button type="submit" 
+                                                class="inline-flex items-center px-3 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50"
+                                                onclick="const comment = prompt('拒絕原因:'); if (comment !== null && comment.trim() !== '') { this.previousElementSibling.value = comment; return true; } alert('請輸入拒絕原因'); return false;">
+                                            拒絕
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="text-center py-12">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900">沒有待審核的任務</h3>
+                    <p class="mt-1 text-sm text-gray-500">所有提交的任務都已經審核完畢</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- 返回控制台 -->
+        <div class="mt-6">
+            <a href="{{ url_for('admin_index_page') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                返回控制台
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock content %}

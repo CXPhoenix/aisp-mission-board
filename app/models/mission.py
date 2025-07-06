@@ -1,12 +1,27 @@
 from typing import Annotated
+from datetime import datetime
 
 from beanie import Document, Indexed
-from pydantic import Field
+from configs import app_conf
+from pydantic import Field, field_validator
 from shared.time_funcs import get_now, timediff
-from shared.types import Utc8Datetime
+from shared.types import MissionReviewState, Utc8Datetime
+
+
+def set_inif() -> datetime:
+    # 設定為 100 年
+    return timediff(36500, "days")
 
 
 class Mission(Document):
+    session: Annotated[
+        str,
+        Field(
+            app_conf,
+            description="所屬的任務時期（用於假性刪除）；系統紀錄用，不做更動；根據 `app_conf.mission` 會進行 filter",
+        ),
+        Indexed()
+    ]
     name: Annotated[str, Field(..., min_length=1)]
     description: Annotated[str, Field(..., min_length=0)]
     tags: Annotated[list[str], Field([], description="給任務上一些標籤。")]
@@ -40,8 +55,48 @@ class Mission(Document):
         ),
     ]
     expired_time: Annotated[
-        Utc8Datetime, Field(defualt=(timediff(36500, unit="days")))
+        Utc8Datetime,
+        Field(
+            default_factory=set_inif,
+            description="任務結束時間。懶得設無限，若沒有過期時限，則設定為 100 年後過期",
+        ),
     ]  # 懶得設無限，若沒有過期時限，則設定為 100 年後過期
+    is_repetitive: Annotated[
+        bool, Field(False, description="是否為可以重複接的任務；預設為否")
+    ]
+    need_upload_proof: Annotated[
+        bool, Field(False, description="是否需要上傳完成證明；功能暫時不開放")
+    ]
+
+
+class PendingMissionReview(Document):
+    session: Annotated[
+        str,
+        Field(
+            app_conf,
+            description="所屬的任務時期（用於假性刪除）；系統紀錄用，不做更動；根據 `app_conf.mission` 會進行 filter",
+        ),
+        Indexed()
+    ]
+    mission_id: Annotated[str, Field(..., description="任務 ID")]
+    user_id: Annotated[str, Field(..., description="用戶 ID")]
+    campus_id: Annotated[str, Field(..., description="校園 ID")]
+    completion_proof: Annotated[
+        bytes, Field(b"", description="完成證明或說明；功能暫時不開放")
+    ]
+    submitted_time: Annotated[
+        Utc8Datetime, Field(default_factory=get_now, description="提交審核時間")
+    ]
+    review_status: Annotated[
+        MissionReviewState,
+        Field(
+            MissionReviewState.PENDDING,
+            description="審核狀態: pending(等待審核), approved(通過), rejected(拒絕)",
+        ),
+    ]
+    reviewer_id: Annotated[str | None, Field(None, description="審核者 ID")]
+    review_time: Annotated[Utc8Datetime | None, Field(None, description="審核時間")]
+    review_comments: Annotated[str, Field("", description="審核意見")]
 
     class Settings:
-        name = "missions"
+        name = "pending mission reviews"

@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- 標題區域 -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">
+                {% if mode == 'create' %}新增商品{% else %}編輯商品{% endif %}
+            </h1>
+            <p class="mt-2 text-sm text-gray-600">
+                {% if mode == 'create' %}創建一個新的商品{% else %}修改商品資訊{% endif %}
+            </p>
+        </div>
+
+        <!-- 表單 -->
+        <div class="bg-white shadow sm:rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <form method="POST" action="{% if mode == 'create' %}{{ url_for('product_create_action') }}{% else %}{{ url_for('product_edit_action', product_id=product.id) }}{% endif %}">
+                    <div class="grid grid-cols-1 gap-6">
+                        <!-- 商品名稱 -->
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700">商品名稱</label>
+                            <input type="text" name="name" id="name" required 
+                                   value="{% if product %}{{ product.name }}{% endif %}"
+                                   class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm">
+                        </div>
+
+                        <!-- 商品描述 -->
+                        <div>
+                            <label for="desc" class="block text-sm font-medium text-gray-700">商品描述</label>
+                            <textarea name="desc" id="desc" rows="3" 
+                                      class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm">{% if product %}{{ product.desc }}{% endif %}</textarea>
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                            <!-- 價格 -->
+                            <div>
+                                <label for="cost" class="block text-sm font-medium text-gray-700">價格（代幣）</label>
+                                <input type="number" name="cost" id="cost" min="0" 
+                                       value="{% if product %}{{ product.cost }}{% else %}0{% endif %}"
+                                       class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm">
+                                <p class="mt-1 text-sm text-gray-500">0 表示免費商品</p>
+                            </div>
+
+                            <!-- 庫存 -->
+                            <div>
+                                <label for="stock" class="block text-sm font-medium text-gray-700">庫存數量</label>
+                                <input type="number" name="stock" id="stock" min="-1" 
+                                       value="{% if product %}{{ product.stock }}{% else %}-1{% endif %}"
+                                       class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm">
+                                <p class="mt-1 text-sm text-gray-500">-1 表示無限庫存</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                            <!-- 購買等級限制 -->
+                            <div>
+                                <label for="level_can_buy" class="block text-sm font-medium text-gray-700">購買等級限制</label>
+                                <input type="number" name="level_can_buy" id="level_can_buy" min="1" 
+                                       value="{% if product %}{{ product.level_can_buy }}{% else %}1{% endif %}"
+                                       class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm">
+                                <p class="mt-1 text-sm text-gray-500">1 表示所有人都可以購買</p>
+                            </div>
+
+                            <!-- 持有數量限制 -->
+                            <div>
+                                <label for="user_can_hold" class="block text-sm font-medium text-gray-700">持有數量限制</label>
+                                <input type="number" name="user_can_hold" id="user_can_hold" min="0" 
+                                       value="{% if product %}{{ product.user_can_hold }}{% else %}0{% endif %}"
+                                       class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm">
+                                <p class="mt-1 text-sm text-gray-500">0 表示可持有無限數量</p>
+                            </div>
+                        </div>
+
+                        <!-- 玩家是否可使用 -->
+                        <div class="flex items-center">
+                            <input type="checkbox" name="user_can_use" id="user_can_use" 
+                                   {% if not product or product.user_can_use %}checked{% endif %}
+                                   class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                            <label for="user_can_use" class="ml-2 block text-sm text-gray-700">
+                                玩家可以使用此商品
+                            </label>
+                            <p class="ml-2 text-sm text-gray-500">（取消勾選表示此商品為裝飾品，如成就徽章等）</p>
+                        </div>
+                    </div>
+
+                    <!-- 按鈕 -->
+                    <div class="mt-6 flex items-center justify-end space-x-3">
+                        <a href="{{ url_for('product_list_page') }}" 
+                           class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            取消
+                        </a>
+                        <button type="submit" 
+                                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700">
+                            {% if mode == 'create' %}創建商品{% else %}更新商品{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

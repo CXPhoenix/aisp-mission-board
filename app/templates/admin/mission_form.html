@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- 標題區域 -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">
+                {% if mode == 'create' %}新增任務{% else %}編輯任務{% endif %}
+            </h1>
+            <p class="mt-2 text-sm text-gray-600">
+                {% if mode == 'create' %}創建一個新的任務{% else %}修改任務資訊{% endif %}
+            </p>
+        </div>
+
+        <!-- 表單 -->
+        <div class="bg-white shadow sm:rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <form method="POST" action="{% if mode == 'create' %}{{ url_for('mission_create_action') }}{% else %}{{ url_for('mission_edit_action', mission_id=mission.id) }}{% endif %}">
+                    <div class="grid grid-cols-1 gap-6">
+                        <!-- 任務名稱 -->
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700">任務名稱</label>
+                            <input type="text" name="name" id="name" required 
+                                   value="{% if mission %}{{ mission.name }}{% endif %}"
+                                   class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        </div>
+
+                        <!-- 任務描述 -->
+                        <div>
+                            <label for="description" class="block text-sm font-medium text-gray-700">任務描述</label>
+                            <textarea name="description" id="description" rows="4" 
+                                      class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">{% if mission %}{{ mission.description }}{% endif %}</textarea>
+                        </div>
+
+                        <!-- 獎勵代幣 -->
+                        <div>
+                            <label for="rewards" class="block text-sm font-medium text-gray-700">獎勵代幣</label>
+                            <input type="number" name="rewards" id="rewards" min="0" required 
+                                   value="{% if mission %}{{ mission.rewards }}{% else %}0{% endif %}"
+                                   class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                            <!-- 最小等級 -->
+                            <div>
+                                <label for="accepted_min_level" class="block text-sm font-medium text-gray-700">最小等級</label>
+                                <input type="number" name="accepted_min_level" id="accepted_min_level" min="1" 
+                                       value="{% if mission %}{{ mission.accepted_min_level }}{% else %}1{% endif %}"
+                                       class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            </div>
+
+                            <!-- 押金 -->
+                            <div>
+                                <label for="invest" class="block text-sm font-medium text-gray-700">押金</label>
+                                <input type="number" name="invest" id="invest" min="0" 
+                                       value="{% if mission %}{{ mission.invest }}{% else %}0{% endif %}"
+                                       class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            </div>
+                        </div>
+
+                        <!-- 標籤 -->
+                        <div>
+                            <label for="tags" class="block text-sm font-medium text-gray-700">標籤</label>
+                            <input type="text" name="tags" id="tags" 
+                                   value="{% if mission %}{{ mission.tags }}{% endif %}"
+                                   placeholder="用逗號分隔，例如：程式設計,網頁開發"
+                                   class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            <p class="mt-1 text-sm text-gray-500">多個標籤請用逗號分隔</p>
+                        </div>
+
+                        <!-- 到期時間 -->
+                        <div>
+                            <label for="expired_time" class="block text-sm font-medium text-gray-700">任務到期時間</label>
+                            <div class="mt-1 relative">
+                                <div class="absolute inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
+                                    <svg class="w-4 h-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                                        <path fill-rule="evenodd" d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm11-4a1 1 0 1 0-2 0v4a1 1 0 0 0 .293.707l3 3a1 1 0 0 0 1.414-1.414L13 11.586V8Z" clip-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                                <input type="datetime-local" name="expired_time" id="expired_time"
+                                       value="{% if mission and mission.expired_time %}{{ mission.expired_time }}{% endif %}"
+                                       class="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pe-10">
+                            </div>
+                            <p class="mt-1 text-sm text-gray-500">留空將設為預設（100年後到期）</p>
+                        </div>
+
+                        <!-- 可重複接取 -->
+                        <div class="flex items-center">
+                            <input type="checkbox" name="is_repetitive" id="is_repetitive" 
+                                   {% if mission and mission.is_repetitive %}checked{% endif %}
+                                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                            <label for="is_repetitive" class="ml-2 block text-sm text-gray-700">
+                                可重複接取
+                            </label>
+                        </div>
+
+                        <!-- 需要上傳證明 -->
+                        <div class="flex items-center">
+                            <input type="checkbox" name="need_upload_proof" id="need_upload_proof" 
+                                   {% if mission and mission.need_upload_proof %}checked{% endif %}
+                                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                            <label for="need_upload_proof" class="ml-2 block text-sm text-gray-700">
+                                需要上傳完成證明
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 按鈕 -->
+                    <div class="mt-6 flex items-center justify-end space-x-3">
+                        <a href="{{ url_for('mission_list_page') }}" 
+                           class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            取消
+                        </a>
+                        <button type="submit" 
+                                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                            {% if mode == 'create' %}創建任務{% else %}更新任務{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

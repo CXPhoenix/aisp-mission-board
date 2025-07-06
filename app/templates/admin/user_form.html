@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- 返回按鈕和標題 -->
+        <div class="flex items-center space-x-4 mb-6">
+            <a href="{{ url_for('user_list_page') }}" 
+               class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                返回用戶列表
+            </a>
+            <h1 class="text-2xl font-bold text-gray-900">
+                {% if mode == 'create' %}新增用戶{% else %}編輯用戶{% endif %}
+            </h1>
+        </div>
+
+        <!-- 表單 -->
+        <div class="bg-white shadow-sm rounded-lg">
+            <form method="POST" 
+                  action="{% if mode == 'create' %}{{ url_for('user_create_action') }}{% else %}{{ url_for('user_edit_action', user_id=user.id) }}{% endif %}"
+                  class="space-y-6 p-6">
+                
+                <!-- 基本資訊 -->
+                <div>
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">基本資訊</h3>
+                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                        <div>
+                            <label for="campus_id" class="block text-sm font-medium text-gray-700">
+                                校園ID <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="campus_id" id="campus_id" required
+                                   value="{% if user %}{{ user.campus_id }}{% endif %}"
+                                   {% if mode == 'edit' %}readonly{% endif %}
+                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 
+                                          {% if mode == 'edit' %}bg-gray-50{% endif %}"
+                                   placeholder="請輸入校園ID">
+                        </div>
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700">
+                                姓名 <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="name" id="name" required
+                                   value="{% if user %}{{ user.name }}{% endif %}"
+                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="請輸入姓名">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 密碼 -->
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700">
+                        密碼 
+                        {% if mode == 'create' %}<span class="text-red-500">*</span>{% endif %}
+                        {% if mode == 'edit' %}<span class="text-gray-500 text-sm">(留空則不更改)</span>{% endif %}
+                    </label>
+                    <input type="password" name="password" id="password" 
+                           {% if mode == 'create' %}required{% endif %}
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="{% if mode == 'create' %}請輸入密碼{% else %}留空則不更改密碼{% endif %}">
+                </div>
+
+                <!-- 角色 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">角色</label>
+                    <div class="space-y-2">
+                        {% for role in roles %}
+                        <div class="flex items-center">
+                            <input type="checkbox" name="roles" value="{{ role.value }}" id="role-{{ role.value }}"
+                                   {% if user and role.value in user.roles %}checked{% endif %}
+                                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                            <label for="role-{{ role.value }}" class="ml-2 text-sm text-gray-700">{{ role.label }}</label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- 遊戲設定 -->
+                <div>
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">遊戲設定</h3>
+                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
+                        <div>
+                            <label for="level" class="block text-sm font-medium text-gray-700">等級</label>
+                            <input type="number" name="level" id="level" min="1" 
+                                   value="{% if user %}{{ user.level }}{% else %}1{% endif %}"
+                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label for="token" class="block text-sm font-medium text-gray-700">代幣</label>
+                            <input type="number" name="token" id="token" min="0" 
+                                   value="{% if user %}{{ user.token }}{% else %}0{% endif %}"
+                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label for="max_missions" class="block text-sm font-medium text-gray-700">最大任務數</label>
+                            <input type="number" name="max_missions" id="max_missions" min="1" max="10" 
+                                   value="{% if user %}{{ user.max_missions }}{% else %}1{% endif %}"
+                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 帳戶設定 -->
+                <div>
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">帳戶設定</h3>
+                    <div class="flex items-center">
+                        <input type="checkbox" name="disabled" id="disabled" 
+                               {% if user and user.disabled %}checked{% endif %}
+                               class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded">
+                        <label for="disabled" class="ml-2 text-sm text-gray-700">
+                            停用帳戶
+                            <span class="text-gray-500 text-sm">(停用後用戶將無法登入)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 提交按鈕 -->
+                <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+                    <a href="{{ url_for('user_list_page') }}" 
+                       class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        取消
+                    </a>
+                    <button type="submit" 
+                            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        {% if mode == 'create' %}
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            新增用戶
+                        {% else %}
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            更新用戶
+                        {% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 提示資訊 -->
+        {% if mode == 'create' %}
+        <div class="mt-6 bg-blue-50 border border-blue-200 rounded-md p-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-blue-800">新增用戶注意事項</h3>
+                    <div class="mt-2 text-sm text-blue-700">
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>校園ID必須唯一，不能重複</li>
+                            <li>密碼會自動進行加密處理</li>
+                            <li>至少需要選擇一個角色</li>
+                            <li>等級、代幣和任務數有最小值限制</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if mode == 'edit' %}
+        <div class="mt-6 bg-yellow-50 border border-yellow-200 rounded-md p-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-yellow-800">編輯用戶注意事項</h3>
+                    <div class="mt-2 text-sm text-yellow-700">
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>校園ID無法修改</li>
+                            <li>密碼留空則不會更改</li>
+                            <li>停用帳戶後用戶將無法登入</li>
+                            <li>修改角色時請謹慎操作</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// 表單驗證
+document.querySelector('form').addEventListener('submit', function(e) {
+    const roles = document.querySelectorAll('input[name="roles"]:checked');
+    if (roles.length === 0) {
+        e.preventDefault();
+        alert('請至少選擇一個角色！');
+        return;
+    }
+    
+    const level = document.getElementById('level').value;
+    const token = document.getElementById('token').value;
+    const maxMissions = document.getElementById('max_missions').value;
+    
+    if (level < 1) {
+        e.preventDefault();
+        alert('等級必須大於等於1！');
+        return;
+    }
+    
+    if (token < 0) {
+        e.preventDefault();
+        alert('代幣不能小於0！');
+        return;
+    }
+    
+    if (maxMissions < 1 || maxMissions > 10) {
+        e.preventDefault();
+        alert('最大任務數必須在1-10之間！');
+        return;
+    }
+});
+</script>
+{% endblock content %}

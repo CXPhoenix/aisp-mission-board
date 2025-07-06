@@ -4,6 +4,7 @@ from typing import Any, Callable, Awaitable
 import time
 
 from fastapi import Request, HTTPException, status
+from fastapi.responses import Response
 from fastapi.templating import Jinja2Templates
 from jinja2 import pass_context
 
@@ -71,6 +72,8 @@ class WebPage:
                 context: dict[str, Any] = func(**kargs)
                 if inspect.isawaitable(context):
                     context = await context
+                if isinstance(context, Response):
+                    return context
                 if page_subtitle:
                     self._webpage_context.update({"subtitle": page_subtitle})
                 if not isinstance(context, dict):
