@@ -7,6 +7,9 @@ services:
       dockerfile: app.Dockerfile
       context: .
     restart: always
+    depends_on:
+      mongo:
+        condition: service_healthy
     env_file:
       - env.d/app.env
     networks:
@@ -43,12 +46,19 @@ services:
       - 27017
     volumes:
       - ./data/db:/data/db
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --eval 'db.runCommand(\"ping\").ok' --quiet"]
+      interval: 20s      # 每 5 秒檢查一次
+      timeout: 15s       # 逾時時間
+      retries: 5       # 重試 10 次後才標記為 unhealthy
+      start_period: 60s # 容器啟動後 60 秒才開始健康檢查
   
   me:
     image: mongo-express:latest
     restart: always
     depends_on:
-      - mongo
+      mongo:
+        condition: service_healthy
     env_file:
       - env.d/me.env
     networks:
