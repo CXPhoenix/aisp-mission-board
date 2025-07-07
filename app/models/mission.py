@@ -67,6 +67,9 @@ class Mission(Document):
     need_upload_proof: Annotated[
         bool, Field(False, description="是否需要上傳完成證明；功能暫時不開放")
     ]
+    
+    class Settings:
+        name = "missions"
 
 
 class MissionSubmitted(Document):
