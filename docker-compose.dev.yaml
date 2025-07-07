@@ -18,6 +18,7 @@ services:
     expose:
       - 8000 
     volumes:
+      - ./app:/app # for development
       - ./data/logs:/temp/logs
   
   tw:
@@ -30,7 +31,8 @@ services:
     volumes:
       - ./app/public/assets:/tw/dist
       - ./app/templates:/tw/templates
-    command: pnpm build # for production
+    command: ['pnpx', '@tailwindcss/cli', '-i', './src/input.css', '-o', './dist/style.css', '--optimize', '--watch=always'] # for development
+    # command: pnpm build # for production
   
   mongo:
     image: mongo:latest
