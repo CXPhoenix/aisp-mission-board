@@ -216,7 +216,7 @@ document.getElementById('csv_file').addEventListener('change', function(e) {
         
         // 驗證檔案類型
         if (!file.name.endsWith('.csv')) {
-            alert('請選擇CSV檔案！');
+            showAlert('請選擇CSV檔案！', '檔案格式錯誤');
             e.target.value = '';
             fileInfo.classList.add('hidden');
         }
@@ -249,7 +249,7 @@ dropZone.addEventListener('drop', function(e) {
             document.getElementById('csv_file').files = files;
             document.getElementById('csv_file').dispatchEvent(new Event('change'));
         } else {
-            alert('請選擇CSV檔案！');
+            showAlert('請選擇CSV檔案！', '檔案格式錯誤');
         }
     }
 });

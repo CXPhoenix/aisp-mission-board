@@ -1,0 +1,1 @@
+# Beanie ODM Migrations Directory

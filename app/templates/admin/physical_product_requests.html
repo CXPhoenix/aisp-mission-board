@@ -124,7 +124,7 @@
             <form id="updateForm" method="POST">
                 <div class="mb-4">
                     <label for="status" class="block text-sm font-medium text-gray-700">狀態</label>
-                    <select name="status" id="status" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm">
+                    <select name="state" id="status" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm">
                         {% for status in status_options %}
                         <option value="{{ status.value }}">{{ status.label }}</option>
                         {% endfor %}
@@ -153,7 +153,7 @@
 <script>
 // 顯示更新彈出視窗
 function showUpdateModal(requestId, currentStatus, currentNotes) {
-    document.getElementById('updateForm').action = `/admin/physical-requests/update/${requestId}`;
+    document.getElementById('updateForm').action = `{{ url_for('update_physical_product_request', request_id='${requestId}') }}`;
     document.getElementById('status').value = currentStatus;
     document.getElementById('admin_notes').value = currentNotes;
     document.getElementById('updateModal').classList.remove('hidden');

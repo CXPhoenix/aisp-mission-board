@@ -225,7 +225,7 @@ async def physical_product_requests_page(
             "user_name": user.name if user else "未知用戶",
             "request_time": req.request_time,
             "approval_time": req.approval_time,
-            "status": req.status,
+            "status": req.status.value,
             "admin_campus_id": req.admin_campus_id,
             "admin_name": admin_user_obj.name if admin_user_obj else None,
             "admin_notes": req.admin_notes,
@@ -234,10 +234,10 @@ async def physical_product_requests_page(
     return {
         "requests": requests_data,
         "status_options": [
-            {"value": PhysicalProductRequestStatus.PENDING, "label": "待審核"},
-            {"value": PhysicalProductRequestStatus.APPROVED, "label": "已核准"},
-            {"value": PhysicalProductRequestStatus.REJECTED, "label": "已拒絕"},
-            {"value": PhysicalProductRequestStatus.FULFILLED, "label": "已完成"},
+            {"value": PhysicalProductRequestStatus.PENDING.value, "label": "待審核"},
+            {"value": PhysicalProductRequestStatus.APPROVED.value, "label": "已核准"},
+            {"value": PhysicalProductRequestStatus.REJECTED.value, "label": "已拒絕"},
+            {"value": PhysicalProductRequestStatus.FULFILLED.value, "label": "已完成"},
         ]
     }
 
@@ -247,7 +247,7 @@ async def update_physical_product_request(
     request: Request,
     request_id: str,
     admin_user: Annotated[User, Depends(get_admin_user)],
-    status: Annotated[PhysicalProductRequestStatus, Form()],
+    state: Annotated[PhysicalProductRequestStatus, Form()],
     admin_notes: Annotated[str, Form()] = "",
 ):
     from shared.time_funcs import get_now
@@ -256,7 +256,7 @@ async def update_physical_product_request(
     if not product_request:
         raise HTTPException(status_code=404, detail="Request not found")
     
-    product_request.status = status
+    product_request.status = state
     product_request.admin_campus_id = admin_user.campus_id
     product_request.admin_notes = admin_notes
     product_request.approval_time = get_now()

@@ -24,6 +24,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - No linting tools configured in pyproject.toml
 - Manual testing through FastAPI's automatic API docs at `/docs`
 - **Important**: When making changes, verify functionality by testing the web interface directly
+- **Testing Strategy**: Human testers will handle post-development testing, but you must provide comprehensive test plans
+
+### Database Migration
+- **Migration System**: Official Beanie ODM migration functionality
+- **Migration Files**: Stored in `app/migrations/` directory following Beanie conventions
+- **Auto-execution**: Automatically checks and executes pending migrations on container startup
+- **CLI Tools**: Containerized wrapper for official Beanie migration commands
 
 ### TailwindCSS Development
 - TailwindCSS build command: `pnpm build` (in tailwind_styles directory)
@@ -92,15 +99,15 @@ app/
 ### Commit Messages
 - **Use commit emojis** for better visual representation of changes
 - **Write detailed commit messages** explaining what was changed and why
-- **Use Traditional Chinese (Taiwan)** for all descriptions and explanations
+- **Use English** for all descriptions and explanations
 - **Keep technical terms in original language** (e.g., FastAPI, MongoDB, Docker)
 - Follow conventional commit format with emoji prefixes
 
 ### README Documentation
 - **Use commit emojis** to organize sections and features
-- **Write in Traditional Chinese (Taiwan)** for all content
+- **Write in English** for all content
 - **Preserve technical terms** in their original language
-- Focus on clear explanations for Taiwan-based developers
+- Focus on clear explanations for developers
 - Include practical examples and usage instructions
 
 ## Important Development Notes
@@ -171,8 +178,92 @@ app/
 - Follow the established pattern of organizing templates by feature in subdirectories
 - Maintain the TailwindCSS + Flowbite component structure
 
+### Migration Management
+
+#### Using Official Beanie CLI (Recommended)
+- **Creating new migrations**:
+  ```bash
+  # Create new migration using official Beanie CLI
+  docker-compose exec app uv run beanie new-migration -n <migration_name> -p /app/migrations
+  ```
+
+- **Running migrations**:
+  ```bash
+  # Run migrations for specific database
+  docker-compose exec app uv run beanie migrate -uri mongodb://user:pass@mongo:27017 -db <database_name> -p /app/migrations
+  
+  # Run with distance limit
+  docker-compose exec app uv run beanie migrate -uri mongodb://user:pass@mongo:27017 -db <database_name> -p /app/migrations --distance 1
+  
+  # Run backward migrations
+  docker-compose exec app uv run beanie migrate -uri mongodb://user:pass@mongo:27017 -db <database_name> -p /app/migrations --backward
+  ```
+
+#### Using Container CLI Wrapper
+- **Creating new migrations**:
+  ```bash
+  # Use our container wrapper
+  docker-compose exec app uv run python -m app.migration_cli new <migration_name>
+  ```
+
+- **Running migrations**:
+  ```bash
+  # Run migrations for all configured databases
+  docker-compose exec app uv run python -m app.migration_cli migrate
+  
+  # Run with specific options
+  docker-compose exec app uv run python -m app.migration_cli migrate --database userdb --distance 1
+  
+  # Dry run to see what would be executed
+  docker-compose exec app uv run python -m app.migration_cli migrate --dry-run
+  ```
+
+- **Checking migration status**:
+  ```bash
+  # Show migration files and database configuration
+  docker-compose exec app uv run python -m app.migration_cli status
+  
+  # Initialize migration system
+  docker-compose exec app uv run python -m app.migration_cli init
+  ```
+
+### Migration Development Workflow
+1. **Modify models**: Edit your Beanie ODM models in `app/models/`
+2. **Create migration**: Use Beanie CLI to create migration files with proper timestamp naming
+3. **Implement migration**: Edit the generated migration file using official Forward/Backward class structure
+4. **Test migration**: Test migration correctness in development environment using CLI tools
+5. **Deploy**: Container restart will automatically execute pending migrations
+
+### Migration Structure (Beanie Official)
+All migrations follow the official Beanie structure with Forward and Backward classes:
+
+```python
+# Example: 20241207_120000_migration_name.py
+from beanie import iterative_migration
+
+class Forward:
+    @iterative_migration()
+    async def migration_method(self, input_document: OldModel, output_document: NewModel):
+        # Forward migration logic
+        output_document.new_field = input_document.old_field
+
+class Backward:
+    @iterative_migration()
+    async def rollback_method(self, input_document: NewModel, output_document: OldModel):
+        # Backward migration logic
+        output_document.old_field = input_document.new_field
+```
+
+### Migration Types
+- **Iterative Migration**: Uses `@iterative_migration()` decorator, processes documents one by one
+- **Free Fall Migration**: Uses `@free_fall_migration()` decorator, supports complex operations with session/transaction
+
 ### Important Notes
 - The application uses server-side rendering with Jinja2 templates
 - All user-facing content should be in Traditional Chinese (Taiwan)
 - Testing must be done through the web interface as no automated testing framework is configured
 - Always verify database connections and model relationships when making changes
+- **Migration System**: Uses official Beanie ODM migration framework with Forward/Backward class structure
+- **Auto-execution**: Migrations run automatically on container startup via `migration_runner.py`
+- **Container Environment**: Migrations work in Docker containers using `uv` package management
+- **CLI Access**: Both official Beanie CLI and custom wrapper available for migration management

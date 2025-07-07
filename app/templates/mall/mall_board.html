@@ -32,13 +32,6 @@
                 </svg>
                 我的背包
             </a>
-            <a href="/mall/physical-requests.html" 
-               class="inline-flex items-center px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                </svg>
-                實體商品申請
-            </a>
             <div class="flex-1"></div>
             <div class="text-sm text-gray-600 flex items-center">
                 顯示 {{ products|length }} 個商品
@@ -165,9 +158,9 @@
                     <div class="pt-4 border-t border-gray-100">
                         {% if product.can_buy %}
                         <form method="POST" action="/mall/{{ product.id }}/buy" class="buy-product-form">
-                            <button type="submit" 
+                            <button type="button" 
                                     class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
-                                    onclick="return confirm('確定要購買此商品嗎？{% if product.cost > 0 %}\\n將扣除 {{ product.cost }} 代幣。{% endif %}{% if product.product_type == 'physical' %}\\n實體商品需要管理員審核。{% endif %}')">
+                                    onclick="const form = this.closest('form'); const message = '確定要購買此商品嗎？{% if product.cost > 0 %}\\n將扣除 {{ product.cost }} 代幣。{% endif %}{% if product.product_type == 'physical' %}\\n實體商品需要管理員審核。{% endif %}'; showConfirm(message, '確認購買', () => form.submit())">
                                 {% if product.cost == 0 %}
                                     免費獲取
                                 {% else %}

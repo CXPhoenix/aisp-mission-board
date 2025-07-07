@@ -163,16 +163,16 @@
                             
                             <div class="mt-3 flex space-x-2">
                                 <form method="POST" action="/mission/{{ mission.id }}/submit" class="flex-1 submit-mission-form">
-                                    <button type="submit" 
+                                    <button type="button" 
                                             class="w-full bg-green-600 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                                            onclick="return confirm('確定要提交此任務進行審核嗎？')">
+                                            onclick="const form = this.closest('form'); showConfirm('確定要提交此任務進行審核嗎？', '提交任務', () => form.submit())">
                                         提交任務
                                     </button>
                                 </form>
                                 <form method="POST" action="/mission/{{ mission.id }}/abandon" class="flex-1 abandon-mission-form">
-                                    <button type="submit" 
+                                    <button type="button" 
                                             class="w-full bg-red-600 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                                            onclick="return confirm('確定要放棄此任務嗎？')">
+                                            onclick="const form = this.closest('form'); showConfirm('確定要放棄此任務嗎？', '放棄任務', () => form.submit())">
                                         放棄任務
                                     </button>
                                 </form>
@@ -291,7 +291,7 @@
         </div>
         
         <!-- 快捷操作 -->
-        <div class="mt-8 grid grid-cols-1 gap-4 {% if 'admin' in user.roles or 'manager' in user.roles %}sm:grid-cols-4{% else %}sm:grid-cols-3{% endif %}">
+        <div class="mt-8 grid grid-cols-1 gap-4 {% if 'admin' in user.roles or 'manager' in user.roles %}sm:grid-cols-5{% else %}sm:grid-cols-4{% endif %}">
             <a href="{{ url_for('mission_index_page') }}" class="relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm flex items-center space-x-3 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                 <div class="flex-shrink-0">
                     <div class="h-10 w-10 bg-indigo-500 rounded-lg flex items-center justify-center">
@@ -334,6 +334,21 @@
                     <span class="absolute inset-0" aria-hidden="true"></span>
                     <p class="text-sm font-medium text-gray-900">背包</p>
                     <p class="text-sm text-gray-500">查看持有的物品</p>
+                </div>
+            </a>
+
+            <a href="{{ url_for('change_password_page') }}" class="relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm flex items-center space-x-3 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <div class="flex-shrink-0">
+                    <div class="h-10 w-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                        <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <span class="absolute inset-0" aria-hidden="true"></span>
+                    <p class="text-sm font-medium text-gray-900">修改密碼</p>
+                    <p class="text-sm text-gray-500">更改登入密碼</p>
                 </div>
             </a>
             

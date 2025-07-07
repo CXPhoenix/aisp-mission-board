@@ -2,9 +2,9 @@ from typing import Annotated
 
 from configs import app_conf
 from fastapi import APIRouter, Depends, Request
-from models.mall import Product
+from models.mall import Product, PhysicalProductRequest
 from models.mission import Mission, MissionSubmitted
-from shared.types import MissionReviewState
+from shared.types import MissionReviewState, PhysicalProductRequestStatus
 
 # for type hint
 from models.user import User
@@ -26,6 +26,9 @@ async def admin_index_page(
         MissionSubmitted.review_status == MissionReviewState.PENDDING,
     ).count()
     total_products = await Product.find_all().count()
+    pending_physical_requests = await PhysicalProductRequest.find(
+        PhysicalProductRequest.status == PhysicalProductRequestStatus.PENDING
+    ).count()
 
     context = {
         "admin_user": {
@@ -37,6 +40,7 @@ async def admin_index_page(
             "total_missions": total_missions,
             "pending_reviews": pending_reviews,
             "total_products": total_products,
+            "pending_physical_requests": pending_physical_requests,
         },
     }
 

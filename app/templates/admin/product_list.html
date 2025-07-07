@@ -116,8 +116,8 @@
                                 <a href="{{ url_for('product_edit_page', product_id=product.id) }}" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                                     編輯
                                 </a>
-                                <form method="POST" action="{{ url_for('product_delete_action', product_id=product.id) }}" class="inline" onsubmit="return confirm('確定要刪除這個商品嗎？')">
-                                    <button type="submit" class="inline-flex items-center px-3 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50">
+                                <form method="POST" action="{{ url_for('product_delete_action', product_id=product.id) }}" class="inline">
+                                    <button type="button" class="inline-flex items-center px-3 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50" onclick="const form = this.closest('form'); showConfirm('確定要刪除這個商品嗎？', '刪除商品', () => form.submit())">
                                         刪除
                                     </button>
                                 </form>

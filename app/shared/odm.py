@@ -21,6 +21,20 @@ class MongoDbClient:
         self._password = password
         self._auth_source = auth_source
         self._client = None
+    
+    def get_uri(self) -> str:
+        """Get MongoDB connection URI for migration tools"""
+        if self._username and self._password:
+            return f"mongodb://{self._username}:{self._password}@{self._host}:{self._port}/?authSource={self._auth_source}"
+        else:
+            return f"mongodb://{self._host}:{self._port}/"
+    
+    @property
+    def client(self) -> AsyncIOMotorClient:
+        """Get the MongoDB client instance"""
+        if self._client is None:
+            raise ValueError("Client not connected. Use build_connection() first.")
+        return self._client
 
     def build_connection(self) -> "MongoDbClient":
         self._client = AsyncIOMotorClient(
