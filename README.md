@@ -1,6 +1,6 @@
 # AiSP Mission Board
 
-![Version](https://img.shields.io/badge/version-v0.1.0-blue.svg)
+![Version](https://img.shields.io/badge/version-v0.5.0-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.12+-green.svg)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-red.svg)
 ![MongoDB](https://img.shields.io/badge/MongoDB-7.0+-green.svg)
@@ -8,6 +8,8 @@
 > [!NOTE]
 > Author: @CXPhoenix
 >
+> Version: 0.5.0
+> 
 > **注意**: 本專案目前處於開發階段，部分功能尚未完全實作。請參考下方的 TODO 清單瞭解開發進度。
 
 ---
@@ -21,7 +23,7 @@ AiSP Mission Board 是為復興高中 AI 資安學程 (FHSH AI & Cybersecurity P
 - 🎯 **任務管理系統**：使用者可以瀏覽、接受並完成任務
 - 👥 **使用者管理**：完整的帳戶系統，包含角色權限管理
 - 🏆 **遊戲化機制**：等級系統、Token 獎勵、任務進度追蹤
-- 🛍️ **虛擬商城**：使用 Token 購買物品（開發中）
+- 🛍️ **虛擬商城**：使用 Token 購買物品，包含實體商品申請功能
 - 👨‍💼 **管理者介面**：任務審核、使用者管理、統計報表
 
 ## 技術架構
@@ -101,14 +103,25 @@ aisp-mission-board/
 │   │   ├── auth_pages.py   # 認證相關路由
 │   │   ├── mission_pages.py # 任務管理路由
 │   │   ├── user_pages.py   # 使用者管理路由
-│   │   ├── mall_pages.py   # 商城路由（開發中）
+│   │   ├── mall_pages.py   # 商城路由
 │   │   └── admin_pages/    # 管理者功能
 │   ├── shared/             # 共用工具和中介軟體
 │   │   ├── odm.py         # MongoDB 連線管理
 │   │   ├── sessions.py    # Session 中介軟體
 │   │   ├── dependencies.py # FastAPI 依賴注入
+│   │   ├── link_utils.py  # 通用連結工具模組
 │   │   └── webpage.py     # 模板渲染工具
 │   ├── templates/          # Jinja2 HTML 模板
+│   │   ├── admin/         # 管理者介面模板
+│   │   │   ├── physical_product_requests.html # 實體商品申請審核
+│   │   │   ├── product_form.html # 商品表單
+│   │   │   └── product_list.html # 商品列表
+│   │   ├── mall/          # 商城介面模板
+│   │   │   ├── mall_board.html # 商城首頁
+│   │   │   ├── mall_detail.html # 商品詳情頁
+│   │   │   └── mall_physical_requests.html # 實體商品申請
+│   │   ├── mission/       # 任務介面模板
+│   │   └── user/          # 使用者介面模板
 │   └── public/            # 靜態資源
 ├── data/                   # 資料儲存目錄
 │   ├── db/                # MongoDB 資料
@@ -165,12 +178,9 @@ docker-compose up --build
 docker-compose down
 ```
 
-## API 文件
+## API 文件（目前未開放）
 
-FastAPI 自動生成的 API 文件可在以下位置存取：
-
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
+![Version](https://img.shields.io/badge/Open_API_Documentation-Concealed-orange.svg)
 
 ## 功能狀態
 
@@ -189,19 +199,22 @@ FastAPI 自動生成的 API 文件可在以下位置存取：
   - 重複性任務支援
   - 任務等級限制
 
+- **虛擬商城系統**
+  - 商品瀏覽和詳情頁面
+  - 虛擬商品購買功能
+  - 實體商品申請與審核流程
+  - 使用者物品庫存管理
+  - Token 交易系統
+
 - **管理者功能**
   - 任務建立和編輯
   - 使用者管理
   - 任務審核系統
+  - 商品管理與上架
+  - 實體商品申請審核
   - 統計報表
 
 ### 🚧 開發中功能
-
-- **虛擬商城系統**
-  - 商品瀏覽介面
-  - 購物車功能
-  - Token 交易系統
-  - 使用者物品庫存管理
 
 - **成就系統**
   - 成就條件定義
@@ -217,38 +230,32 @@ FastAPI 自動生成的 API 文件可在以下位置存取：
 
 ### 🔴 高優先度
 
-1. **完整實作虛擬商城系統**
-   - 商品瀏覽和搜尋介面 (`app/pages/mall_pages.py`)
-   - 購物車功能
-   - Token 交易處理
-   - 使用者物品庫存管理
-   - 商城模板實作 (`app/templates/mall/mall_board.html`)
-
-2. **成就系統開發**
+1. **成就系統開發**
    - 成就模型完整實作 (`app/models/badge.py`)
    - 成就解鎖邏輯
    - 成就展示頁面
+   - 成就系統與任務系統整合
 
 ### 🟡 中優先度
 
-3. **操作紀錄系統**
+2. **操作紀錄系統**
    - 管理者操作日誌 (`app/models/record.py`)
    - 使用者行為追蹤
    - 系統稽核報表
 
-4. **系統最佳化**
-   - 錯誤處理改善 (`app/main.py:66`)
+3. **系統最佳化**
+   - 錯誤處理改善
    - 效能優化
-   - 生產環境設定清理 (`app/main.py:73`)
+   - 生產環境設定清理
 
 ### 🟢 低優先度
 
-5. **使用者體驗改善**
+4. **使用者體驗改善**
    - 介面優化
    - 回應式設計改善
    - 載入效能提升
 
-6. **文件和測試**
+5. **文件和測試**
    - API 文件完善
    - 單元測試撰寫
    - 整合測試
@@ -263,11 +270,20 @@ FastAPI 自動生成的 API 文件可在以下位置存取：
 
 ## 版本歷史
 
-### v0.1.0 (目前版本)
+### v0.5.0 (目前版本)
+- 🛍️ 完整實作虛擬商城系統與實體商品申請功能
+- 🔧 新增 MongoDB 服務健康檢查與依賴更新
+- 📝 更新專案描述以反映正確的程式名稱
+- 📚 新增 Claude Code 開發指南與相關環境設定
+- 🎯 完善管理者系統與任務審核流程
+- ⚡ 增強 FastAPI 應用程式的自訂錯誤處理和路由
+- 🏗️ 優化專案結構與程式碼可讀性
+
+### v0.1.0
 - 基礎架構建立
 - 使用者管理系統
 - 任務管理系統
-- 管理者功能
+- 管理者功能初步實作
 - Docker 部署設定
 
 ## 授權條款

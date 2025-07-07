@@ -19,6 +19,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Requires Python >=3.12
 - Install dependencies: `uv sync` (if developing locally)
 
+### Testing and Linting
+- No specific testing framework configured yet
+- No linting tools configured in pyproject.toml
+- Manual testing through FastAPI's automatic API docs at `/docs`
+
 ## Architecture Overview
 
 ### Core Framework
@@ -68,6 +73,50 @@ app/
 
 ### Docker Setup
 - Multi-service architecture with Docker Compose
-- Separate containers for app, TailwindCSS building, MongoDB, and utilities
+- Services: `app` (FastAPI), `tw` (TailwindCSS), `mongo` (MongoDB), `me` (Mongo Express), `cf` (Cloudflare tunnel)
 - Development vs production command variations for TailwindCSS
 - Volume mounts for live development and persistent data
+- Health checks configured for MongoDB service
+- Internal networks for security isolation
+
+## Writing Guidelines
+
+### Commit Messages
+- **Use commit emojis** for better visual representation of changes
+- **Write detailed commit messages** explaining what was changed and why
+- **Use Traditional Chinese (Taiwan)** for all descriptions and explanations
+- **Keep technical terms in original language** (e.g., FastAPI, MongoDB, Docker)
+- Follow conventional commit format with emoji prefixes
+
+### README Documentation
+- **Use commit emojis** to organize sections and features
+- **Write in Traditional Chinese (Taiwan)** for all content
+- **Preserve technical terms** in their original language
+- Focus on clear explanations for Taiwan-based developers
+- Include practical examples and usage instructions
+
+## Important Development Notes
+
+### Security Considerations
+- Session-based authentication using JWT tokens
+- Password hashing with bcrypt
+- Role-based access control (USER, MANAGER, ADMIN)
+- Environment variables for sensitive configuration
+
+### Multi-Database Design
+- Each database serves specific domain purposes
+- Cross-database relationships managed through Beanie's Link/BackLink
+- Connection pooling handled by MongoDbClient class
+
+### Current Development Status
+- Core user and mission management: ✅ Complete
+- Admin interface: ✅ Complete
+- Virtual mall system: 🚧 In development
+- Achievement system: 🚧 Planned
+- Testing framework: ❌ Not configured
+
+### Service Access Points
+- Main app: `http://localhost:8000`
+- MongoDB Express: `http://localhost:8081`
+- API documentation: `http://localhost:8000/docs`
+- ReDoc: `http://localhost:8000/redoc`
