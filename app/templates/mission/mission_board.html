@@ -173,7 +173,7 @@
                         {% endif %}
                         
                         <!-- Detail Link -->
-                        <a href="/mission/{{ mission.id }}/detail.html" 
+                        <a href="{{ url_for('mission_detail_page', mission_id=mission.id) }}" 
                            class="block text-center mt-2 text-sm text-blue-600 hover:text-blue-800">
                             查看詳情
                         </a>

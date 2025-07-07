@@ -40,6 +40,20 @@ class MissionReviewState(IntEnum):
     PENDDING = 0b001
     APPROVED = 0b100
     REJECTED = 0b010
+
+
+class ProductType(str, Enum):
+    STANDARD = "standard"
+    LEVEL_UP = "level_up"
+    PHYSICAL = "physical"
+    BADGE = "badge"
+
+
+class PhysicalProductRequestStatus(str, Enum):
+    PENDING = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+    FULFILLED = "fulfilled"
     
 class UserSessionData(BaseModel):
     model_config = ConfigDict(extra="ignore")

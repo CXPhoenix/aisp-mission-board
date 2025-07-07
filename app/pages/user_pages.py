@@ -1,13 +1,14 @@
 from fastapi import APIRouter, Depends, Request, status
 from shared import WebPage
 from shared.dependencies import get_current_user
-from shared.types import Role
+from shared.types import Role, MissionReviewState
+from shared.link_utils import safe_fetch_link, safe_fetch_links
 from typing import Annotated
 from configs import app_conf
 
 # for type hint
 from models.user import User, OwnItem
-from models.mission import Mission, PendingMissionReview
+from models.mission import Mission, MissionSubmitted
 
 router = APIRouter(prefix="/user", dependencies=[Depends(get_current_user)])
 
@@ -22,11 +23,7 @@ async def user_index_page(request: Request, user: Annotated[User, Depends(get_cu
     # 準備任務資料 - 只顯示當前 session 的任務
     ongoing_missions = []
     for mission_link in user.ongoing_missions:
-        # Check if it's a Link object or already resolved Mission object
-        if hasattr(mission_link, 'fetch'):
-            mission = await mission_link.fetch()
-        else:
-            mission = mission_link
+        mission = await safe_fetch_link(mission_link)
         if mission and mission.session == app_conf.mission:
             ongoing_missions.append({
                 "id": str(mission.id),
@@ -40,11 +37,7 @@ async def user_index_page(request: Request, user: Annotated[User, Depends(get_cu
     # 準備待審核任務資料 - 只顯示當前 session 的任務
     review_pending_missions = []
     for review_link in user.review_pending_missions:
-        # Check if it's a Link object or already resolved PendingMissionReview object
-        if hasattr(review_link, 'fetch'):
-            review = await review_link.fetch()
-        else:
-            review = review_link
+        review = await safe_fetch_link(review_link)
         if review and review.session == app_conf.mission:
             review_pending_missions.append({
                 "id": str(review.id),
@@ -55,20 +48,33 @@ async def user_index_page(request: Request, user: Annotated[User, Depends(get_cu
     
     # 準備已完成任務資料 - 只顯示當前 session 的任務
     completed_missions = []
-    for mission_link in user.completed_missions:
-        # Check if it's a Link object or already resolved Mission object
-        if hasattr(mission_link, 'fetch'):
-            mission = await mission_link.fetch()
-        else:
-            mission = mission_link
-        if mission and mission.session == app_conf.mission:
-            completed_missions.append({
-                "id": str(mission.id),
-                "name": mission.name,
-                "description": mission.description,
-                "rewards": mission.rewards,
-                "tags": mission.tags
-            })
+    ## 重新調整邏輯，使用 MissionSubmitted 去搜尋（雖然慢一點，但是先穩妥）
+    mission_submitted_filter = (
+        MissionSubmitted.session == app_conf.mission,
+        MissionSubmitted.user_id == str(user.id),
+        MissionSubmitted.review_status == MissionReviewState.APPROVED,
+    )
+    for mission_submitted in (await MissionSubmitted.find(*mission_submitted_filter).to_list()):
+        mission = await (mission_submitted.get_mission())
+        completed_missions.append({
+            "id": str(mission_submitted.id),
+            "name": mission.name,
+            "description": mission.description,
+            "rewards": mission.rewards,
+            "tags": mission.tags,
+        })
+    
+    ## 備用邏輯
+    # for mission_link in user.completed_missions:
+    #     mission = await safe_fetch_link(mission_link)
+    #     if mission and mission.session == app_conf.mission:
+    #         completed_missions.append({
+    #             "id": str(mission.id),
+    #             "name": mission.name,
+    #             "description": mission.description,
+    #             "rewards": mission.rewards,
+    #             "tags": mission.tags
+    #         })
     
     context = {
         "user": {
@@ -96,17 +102,9 @@ async def user_bag_page(request: Request, user: Annotated[User, Depends(get_curr
     # 準備道具資料
     items = []
     for item_link in user.bag:
-        # Check if it's a Link object or already resolved OwnItem object
-        if hasattr(item_link, 'fetch'):
-            own_item = await item_link.fetch()
-        else:
-            own_item = item_link
+        own_item = await safe_fetch_link(item_link)
         if own_item:
-            # Check if item is a Link object or already resolved Product object
-            if hasattr(own_item.item, 'fetch'):
-                product = await own_item.item.fetch()
-            else:
-                product = own_item.item
+            product = await safe_fetch_link(own_item.item)
             if product:
                 items.append({
                     "id": str(own_item.id),
@@ -128,6 +126,109 @@ async def user_bag_page(request: Request, user: Annotated[User, Depends(get_curr
     }
     
     return context
+
+
+@router.post("/item/{item_id}/use")
+async def user_use_item(
+    request: Request,
+    item_id: str,
+    user: Annotated[User, Depends(get_current_user)]
+):
+    from beanie import PydanticObjectId
+    from fastapi.responses import RedirectResponse
+    
+    try:
+        # 獲取物品
+        own_item = await OwnItem.get(PydanticObjectId(item_id))
+        if not own_item:
+            request.session["error"] = "物品不存在"
+            return RedirectResponse(url=request.url_for("user_bag_page"), status_code=302)
+        
+        # 檢查物品是否屬於該用戶
+        await user.fetch_all_links()
+        user_owns_item = False
+        for item_link in user.bag:
+            user_item = await safe_fetch_link(item_link)
+            if user_item and str(user_item.id) == str(own_item.id):
+                user_owns_item = True
+                break
+        
+        if not user_owns_item:
+            request.session["error"] = "您沒有這個物品"
+            return RedirectResponse(url=request.url_for("user_bag_page"), status_code=302)
+        
+        # 檢查物品是否可以使用
+        if not own_item.user_can_use:
+            request.session["error"] = "此物品無法使用"
+            return RedirectResponse(url=request.url_for("user_bag_page"), status_code=302)
+        
+        # 獲取產品信息
+        product = await safe_fetch_link(own_item.item)
+        
+        if not product:
+            request.session["error"] = "物品信息錯誤"
+            return RedirectResponse(url=request.url_for("user_bag_page"), status_code=302)
+        
+        # 檢查產品是否允許用戶使用
+        if not product.user_can_use:
+            request.session["error"] = "此商品無法使用"
+            return RedirectResponse(url=request.url_for("user_bag_page"), status_code=302)
+        
+        # 檢查數量
+        if own_item.quantity <= 0:
+            request.session["error"] = "物品數量不足"
+            return RedirectResponse(url=request.url_for("user_bag_page"), status_code=302)
+        
+        # 根據商品類型執行使用邏輯
+        from shared.types import ProductType
+        
+        if product.product_type == ProductType.LEVEL_UP:
+            # 等級提升道具
+            user.level += product.level_increase
+            success_msg = f"使用 '{product.name}' 成功，等級提升至 {user.level}"
+            
+        elif product.product_type == ProductType.PHYSICAL:
+            # 實體商品不應該出現在背包中，但如果出現了就不允許使用
+            request.session["error"] = "實體商品無法通過背包使用"
+            return RedirectResponse(url=request.url_for("user_bag_page"), status_code=302)
+            
+        elif product.product_type == ProductType.BADGE:
+            # 徽章不能使用
+            request.session["error"] = "成就徽章無法使用，僅作收藏"
+            return RedirectResponse(url=request.url_for("user_bag_page"), status_code=302)
+            
+        else:
+            # 標準商品 - 這裡可以根據需要添加具體的使用邏輯
+            # 目前只是簡單的消耗物品
+            success_msg = f"使用 '{product.name}' 成功"
+        
+        # 減少物品數量
+        own_item.quantity -= 1
+        
+        # 如果數量為0，從背包中移除
+        if own_item.quantity <= 0:
+            # 從用戶背包中移除
+            for i, item_link in enumerate(user.bag):
+                user_item = await safe_fetch_link(item_link)
+                if user_item and str(user_item.id) == str(own_item.id):
+                    user.bag.pop(i)
+                    break
+            
+            # 刪除物品記錄
+            await own_item.delete()
+        else:
+            # 保存更新的數量
+            await own_item.save()
+        
+        # 保存用戶更新
+        await user.save()
+        
+        request.session["success"] = success_msg
+        return RedirectResponse(url=request.url_for("user_bag_page"), status_code=302)
+        
+    except Exception as e:
+        request.session["error"] = f"使用物品失敗: {str(e)}"
+        return RedirectResponse(url=request.url_for("user_bag_page"), status_code=302)
 
 
 @router.post("/clear-session-messages")

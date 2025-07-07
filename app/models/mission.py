@@ -3,7 +3,7 @@ from datetime import datetime
 
 from beanie import Document, Indexed
 from configs import app_conf
-from pydantic import Field, field_validator
+from pydantic import Field
 from shared.time_funcs import get_now, timediff
 from shared.types import MissionReviewState, Utc8Datetime
 
@@ -69,7 +69,7 @@ class Mission(Document):
     ]
 
 
-class PendingMissionReview(Document):
+class MissionSubmitted(Document):
     session: Annotated[
         str,
         Field(
@@ -98,5 +98,8 @@ class PendingMissionReview(Document):
     review_time: Annotated[Utc8Datetime | None, Field(None, description="審核時間")]
     review_comments: Annotated[str, Field("", description="審核意見")]
 
+    async def get_mission(self) -> Mission | None:
+        return await Mission.get(self.mission_id)
+    
     class Settings:
-        name = "pending mission reviews"
+        name = "mission submitted"

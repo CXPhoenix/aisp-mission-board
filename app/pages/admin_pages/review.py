@@ -3,7 +3,8 @@ from typing import Annotated
 from configs import app_conf
 from fastapi import APIRouter, Depends, Form, HTTPException, Request, status
 from fastapi.responses import RedirectResponse
-from models.mission import Mission, MissionReviewState, PendingMissionReview
+from models.mission import Mission, MissionSubmitted
+from shared.types import MissionReviewState
 
 # for type hint
 from models.user import User
@@ -24,12 +25,12 @@ def get_mission_id(mission_obj):
 
 
 def get_review_id(review_obj):
-    """Helper function to safely extract review ID from Link or PendingMissionReview object"""
+    """Helper function to safely extract review ID from Link or MissionSubmitted object"""
     if hasattr(review_obj, 'fetch'):
         # It's a Link object, we need to access the ref_id
         return str(review_obj.ref.id) if hasattr(review_obj.ref, 'id') else None
     else:
-        # It's already a PendingMissionReview object
+        # It's already a MissionSubmitted object
         return str(review_obj.id) if hasattr(review_obj, 'id') else None
 
 
@@ -41,8 +42,8 @@ async def review_list_page(
 ):
     from shared.time_funcs import get_now
 
-    reviews = await PendingMissionReview.find(
-        PendingMissionReview.session == app_conf.mission
+    reviews = await MissionSubmitted.find(
+        MissionSubmitted.session == app_conf.mission
     ).to_list()
 
     reviews_data = []
@@ -81,7 +82,7 @@ async def review_detail_page(
     review_id: str,
     admin_user: Annotated[User, Depends(get_admin_user)],
 ):
-    review = await PendingMissionReview.get(review_id)
+    review = await MissionSubmitted.get(review_id)
     if not review or review.session != app_conf.mission:
         raise HTTPException(status_code=404, detail="Review not found")
 
@@ -131,7 +132,7 @@ async def review_approve_action(
 ):
     from shared.time_funcs import get_now
 
-    review = await PendingMissionReview.get(review_id)
+    review = await MissionSubmitted.get(review_id)
     if not review or review.session != app_conf.mission:
         raise HTTPException(status_code=404, detail="Review not found")
 
@@ -142,14 +143,15 @@ async def review_approve_action(
     review.review_comments = comments
     await review.save()
 
-    # Move mission to user's completed missions and award tokens
+    # Move mission_submitted to user's completed missions and award tokens
     user = await User.get(review.user_id)
     mission = await Mission.get(review.mission_id)
+    mission_submitted = await MissionSubmitted.get(review.id)
 
-    if user and mission:
+    if user and mission_submitted:
         # Add to completed missions
-        if mission not in user.completed_missions:
-            user.completed_missions.append(mission)
+        if mission_submitted not in user.completed_missions:
+            user.completed_missions.append(mission_submitted)
 
         # Remove from ongoing missions
         user.ongoing_missions = [
@@ -180,7 +182,7 @@ async def review_reject_action(
 ):
     from shared.time_funcs import get_now
 
-    review = await PendingMissionReview.get(review_id)
+    review = await MissionSubmitted.get(review_id)
     if not review or review.session != app_conf.mission:
         raise HTTPException(status_code=404, detail="Review not found")
 

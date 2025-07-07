@@ -7,7 +7,7 @@ from shared.time_funcs import get_now
 from shared.types import Role, Utc8Datetime
 
 from .mall import Product
-from .mission import Mission, PendingMissionReview
+from .mission import Mission, MissionSubmitted
 
 # Password hashes configurations
 passwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -107,10 +107,10 @@ class User(Document):
         ),
     ]
     review_pending_missions: Annotated[
-        list[Link[PendingMissionReview]], Field([], description="等代審核通過的任務")
+        list[Link[MissionSubmitted]], Field([], description="等代審核通過的任務")
     ]
     completed_missions: Annotated[
-        list[Link[Mission]],
+        list[Link[MissionSubmitted]],
         Field(
             [],
             description="目前玩家所完成的任務。",

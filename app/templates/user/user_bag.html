@@ -1,115 +1,229 @@
 {% extends 'base.html' %}
+
 {% block content %}
-<div class="min-h-screen bg-gray-50 py-8">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- 頁面標題 -->
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900">道具欄</h1>
-            <p class="mt-2 text-sm text-gray-600">查看您目前持有的所有道具</p>
-        </div>
-        
-        <!-- 使用者資訊卡片 -->
-        <div class="bg-white overflow-hidden shadow rounded-lg mb-8">
-            <div class="px-4 py-5 sm:p-6">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <div class="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center">
-                                <span class="text-lg font-bold text-indigo-600">{{ user.name[0] }}</span>
-                            </div>
-                        </div>
-                        <div class="ml-4">
-                            <h3 class="text-lg font-medium text-gray-900">{{ user.name }}</h3>
-                            <p class="text-sm text-gray-500">{{ user.campus_id }}</p>
-                        </div>
+<div class="min-h-screen bg-gray-50 p-4">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header Section -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">我的背包</h1>
+                    <p class="text-gray-600 mt-1">查看和使用您的物品</p>
+                </div>
+                <div class="mt-4 md:mt-0 flex flex-col md:flex-row gap-4">
+                    <div class="bg-blue-50 px-4 py-3 rounded-lg">
+                        <div class="text-sm text-blue-600 font-medium">等級</div>
+                        <div class="text-lg font-bold text-blue-900">{{ user.level }}</div>
                     </div>
-                    <div class="flex items-center gap-8 px-6">
-                        <div class="text-center">
-                            <div class="text-2xl font-bold text-indigo-600">{{ user.level }}</div>
-                            <div class="text-sm text-gray-500">等級</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="text-2xl font-bold text-green-600">{{ user.token }}</div>
-                            <div class="text-sm text-gray-500">代幣</div>
-                        </div>
+                    <div class="bg-green-50 px-4 py-3 rounded-lg">
+                        <div class="text-sm text-green-600 font-medium">代幣</div>
+                        <div class="text-lg font-bold text-green-900">{{ user.token }}</div>
                     </div>
                 </div>
             </div>
-        </div>
-        
-        <!-- 道具列表 -->
-        <div class="bg-white shadow rounded-lg">
-            <div class="px-4 py-5 sm:p-6">
-                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">持有道具</h3>
-                
-                {% if items %}
-                    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                        {% for item in items %}
-                        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:shadow-md transition-shadow">
-                            <div class="flex items-start justify-between mb-3">
-                                <div class="flex-1">
-                                    <h4 class="text-sm font-medium text-gray-900 truncate">{{ item.name }}</h4>
-                                    {% if item.description %}
-                                    <p class="text-xs text-gray-600 mt-1 line-clamp-2">{{ item.description }}</p>
-                                    {% endif %}
-                                </div>
-                                <div class="ml-2 flex-shrink-0">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                        x{{ item.quantity }}
-                                    </span>
-                                </div>
-                            </div>
-                            
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-2">
-                                    {% if item.user_can_use and item.product_user_can_use %}
-                                    <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-green-100 text-green-800">
-                                        可使用
-                                    </span>
-                                    {% else %}
-                                    <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800">
-                                        收藏品
-                                    </span>
-                                    {% endif %}
-                                </div>
-                                
-                                {% if item.user_can_use and item.product_user_can_use %}
-                                <button class="bg-indigo-600 text-white px-3 py-1 rounded-md text-xs font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                    使用
-                                </button>
-                                {% endif %}
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <div class="text-center py-12">
-                        <div class="mx-auto h-12 w-12 text-gray-400">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+            
+            <!-- Breadcrumb -->
+            <nav class="flex mt-4" aria-label="Breadcrumb">
+                <ol class="flex items-center space-x-4">
+                    <li>
+                        <a href="/user/" class="text-gray-400 hover:text-gray-500">
+                            <svg class="flex-shrink-0 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
                             </svg>
+                            <span class="sr-only">用戶首頁</span>
+                        </a>
+                    </li>
+                    <li>
+                        <div class="flex items-center">
+                            <svg class="flex-shrink-0 h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <a href="/user/" class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">用戶中心</a>
                         </div>
-                        <h3 class="mt-2 text-sm font-medium text-gray-900">背包是空的</h3>
-                        <p class="mt-1 text-sm text-gray-500">去商城購買一些道具吧！</p>
-                        <div class="mt-6">
-                            <a href="{{ url_for('mall_index_page') }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                前往商城
-                            </a>
+                    </li>
+                    <li>
+                        <div class="flex items-center">
+                            <svg class="flex-shrink-0 h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="ml-4 text-sm font-medium text-gray-500">我的背包</span>
                         </div>
-                    </div>
-                {% endif %}
+                    </li>
+                </ol>
+            </nav>
+        </div>
+
+        <!-- Action Bar -->
+        <div class="flex flex-col md:flex-row gap-4 mb-6">
+            <a href="/mall/" 
+               class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 6M7 13l-1.5 6m0 0h9m-9 0h9m0 0l1.5-6M7 13h10m-10 0L5.4 5M7 13h10"></path>
+                </svg>
+                前往商城
+            </a>
+            <div class="flex-1"></div>
+            <div class="text-sm text-gray-600 flex items-center">
+                共 {{ items|length }} 種物品
             </div>
         </div>
+
+        <!-- Messages -->
+        {% if request.session.get('success') %}
+        <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium text-green-800">{{ request.session.get('success') }}</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if request.session.get('error') %}
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium text-red-800">{{ request.session.get('error') }}</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
         
-        <!-- 返回按鈕 -->
-        <div class="mt-8 flex justify-start">
-            <a href="{{ url_for('user_index_page') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        <!-- Items Grid -->
+        {% if items %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {% for item in items %}
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+                <div class="p-6">
+                    <!-- Item Header -->
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex-1 pr-2">
+                            <h3 class="text-lg font-semibold text-gray-900 line-clamp-2">{{ item.name }}</h3>
+                            <div class="flex items-center mt-2">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                    數量: {{ item.quantity }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Item Description -->
+                    {% if item.description %}
+                    <p class="text-gray-600 text-sm mb-4 line-clamp-3">{{ item.description }}</p>
+                    {% else %}
+                    <p class="text-gray-400 text-sm mb-4 italic">暫無物品描述</p>
+                    {% endif %}
+
+                    <!-- Item Status -->
+                    <div class="mb-4">
+                        {% if item.user_can_use and item.product_user_can_use %}
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            可使用
+                        </span>
+                        {% else %}
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+                            </svg>
+                            收藏品
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Action Button -->
+                    <div class="pt-4 border-t border-gray-100">
+                        {% if item.user_can_use and item.product_user_can_use %}
+                        <form method="POST" action="/user/item/{{ item.id }}/use" class="use-item-form">
+                            <button type="submit" 
+                                    class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                                    onclick="return confirm('確定要使用 {{ item.name }} 嗎？\\n使用後將消耗 1 個物品。')">
+                                使用物品
+                            </button>
+                        </form>
+                        {% else %}
+                        <button disabled class="w-full px-4 py-2 bg-gray-100 text-gray-500 rounded-lg cursor-not-allowed font-medium">
+                            此物品無法使用
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <!-- Empty State -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="text-center py-12">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
                 </svg>
-                返回使用者面板
+                <h3 class="mt-2 text-sm font-medium text-gray-900">背包是空的</h3>
+                <p class="mt-1 text-sm text-gray-500">您還沒有任何物品，前往商城購買一些吧！</p>
+                <div class="mt-6">
+                    <a href="/mall/" 
+                       class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                        前往商城
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Back Button -->
+        <div class="mt-6">
+            <a href="/user/" 
+               class="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                返回用戶中心
             </a>
         </div>
     </div>
 </div>
+
+<style>
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+</style>
 {% endblock content %}
+
+{% block js_content %}
+<script>
+// Clear session messages after displaying
+fetch('/user/clear-session-messages', {method: 'POST'}).catch(() => {});
+
+// Add loading state to forms
+document.querySelectorAll('.use-item-form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+        const button = this.querySelector('button[type="submit"]');
+        button.disabled = true;
+        button.innerHTML = '<span class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></span>使用中...';
+    });
+});
+</script>
+{% endblock js_content %}

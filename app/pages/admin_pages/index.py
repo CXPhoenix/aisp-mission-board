@@ -3,7 +3,8 @@ from typing import Annotated
 from configs import app_conf
 from fastapi import APIRouter, Depends, Request
 from models.mall import Product
-from models.mission import Mission, MissionReviewState, PendingMissionReview
+from models.mission import Mission, MissionSubmitted
+from shared.types import MissionReviewState
 
 # for type hint
 from models.user import User
@@ -20,9 +21,9 @@ async def admin_index_page(
 ):
     # 統計資料
     total_missions = await Mission.find(Mission.session == app_conf.mission).count()
-    pending_reviews = await PendingMissionReview.find(
-        PendingMissionReview.session == app_conf.mission,
-        PendingMissionReview.review_status == MissionReviewState.PENDDING,
+    pending_reviews = await MissionSubmitted.find(
+        MissionSubmitted.session == app_conf.mission,
+        MissionSubmitted.review_status == MissionReviewState.PENDDING,
     ).count()
     total_products = await Product.find_all().count()
 

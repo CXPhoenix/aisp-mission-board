@@ -32,6 +32,19 @@
                                       class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm">{% if product %}{{ product.desc }}{% endif %}</textarea>
                         </div>
 
+                        <!-- 商品類型 -->
+                        <div>
+                            <label for="product_type" class="block text-sm font-medium text-gray-700">商品類型</label>
+                            <select name="product_type" id="product_type" 
+                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm">
+                                <option value="standard" {% if not product or product.product_type == 'standard' %}selected{% endif %}>標準商品</option>
+                                <option value="level_up" {% if product and product.product_type == 'level_up' %}selected{% endif %}>等級提升道具</option>
+                                <option value="physical" {% if product and product.product_type == 'physical' %}selected{% endif %}>實體商品</option>
+                                <option value="badge" {% if product and product.product_type == 'badge' %}selected{% endif %}>成就徽章</option>
+                            </select>
+                            <p class="mt-1 text-sm text-gray-500">選擇商品類型將自動調整相關設定</p>
+                        </div>
+
                         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
                             <!-- 價格 -->
                             <div>
@@ -72,6 +85,15 @@
                             </div>
                         </div>
 
+                        <!-- 等級提升數量 (僅 level_up 類型顯示) -->
+                        <div id="level_increase_field" class="{% if not product or product.product_type != 'level_up' %}hidden{% endif %}">
+                            <label for="level_increase" class="block text-sm font-medium text-gray-700">等級提升數量</label>
+                            <input type="number" name="level_increase" id="level_increase" min="0" 
+                                   value="{% if product %}{{ product.level_increase }}{% else %}0{% endif %}"
+                                   class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm">
+                            <p class="mt-1 text-sm text-gray-500">使用後提升的等級數量</p>
+                        </div>
+
                         <!-- 玩家是否可使用 -->
                         <div class="flex items-center">
                             <input type="checkbox" name="user_can_use" id="user_can_use" 
@@ -81,6 +103,28 @@
                                 玩家可以使用此商品
                             </label>
                             <p class="ml-2 text-sm text-gray-500">（取消勾選表示此商品為裝飾品，如成就徽章等）</p>
+                        </div>
+
+                        <!-- 自動使用 -->
+                        <div class="flex items-center">
+                            <input type="checkbox" name="auto_use" id="auto_use" 
+                                   {% if product and product.auto_use %}checked{% endif %}
+                                   class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                            <label for="auto_use" class="ml-2 block text-sm text-gray-700">
+                                購買後自動使用
+                            </label>
+                            <p class="ml-2 text-sm text-gray-500">（勾選後商品購買後立即使用）</p>
+                        </div>
+
+                        <!-- 實體商品 -->
+                        <div class="flex items-center">
+                            <input type="checkbox" name="is_physical" id="is_physical" 
+                                   {% if product and product.is_physical %}checked{% endif %}
+                                   class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                            <label for="is_physical" class="ml-2 block text-sm text-gray-700">
+                                實體商品
+                            </label>
+                            <p class="ml-2 text-sm text-gray-500">（勾選後商品需要實體配送）</p>
                         </div>
                     </div>
 
@@ -100,4 +144,46 @@
         </div>
     </div>
 </div>
+
+<script>
+// 商品類型變更時的動態表單邏輯
+document.getElementById('product_type').addEventListener('change', function() {
+    const productType = this.value;
+    const levelIncreaseField = document.getElementById('level_increase_field');
+    const userCanUseCheckbox = document.getElementById('user_can_use');
+    const autoUseCheckbox = document.getElementById('auto_use');
+    const isPhysicalCheckbox = document.getElementById('is_physical');
+    
+    // 重置所有字段
+    levelIncreaseField.classList.add('hidden');
+    userCanUseCheckbox.checked = true;
+    autoUseCheckbox.checked = false;
+    isPhysicalCheckbox.checked = false;
+    
+    // 根據商品類型設置相應的字段
+    switch(productType) {
+        case 'level_up':
+            levelIncreaseField.classList.remove('hidden');
+            autoUseCheckbox.checked = true;
+            break;
+        case 'physical':
+            isPhysicalCheckbox.checked = true;
+            autoUseCheckbox.checked = false;
+            break;
+        case 'badge':
+            userCanUseCheckbox.checked = false;
+            autoUseCheckbox.checked = false;
+            break;
+        case 'standard':
+        default:
+            // 標準商品不做特殊處理
+            break;
+    }
+});
+
+// 頁面加載時觸發一次以確保字段正確顯示
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('product_type').dispatchEvent(new Event('change'));
+});
+</script>
 {% endblock content %}

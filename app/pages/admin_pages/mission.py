@@ -4,7 +4,7 @@ from datetime import datetime
 from configs import app_conf
 from fastapi import APIRouter, Depends, Form, HTTPException, Request, status
 from fastapi.responses import RedirectResponse
-from models.mission import Mission
+from models.mission import Mission, MissionSubmitted
 
 # for type hint
 from models.user import User
@@ -199,6 +199,53 @@ async def mission_delete_action(
     if not mission or mission.session != app_conf.mission:
         raise HTTPException(status_code=404, detail="Mission not found")
 
+    # Cascade deletion: Clean up all references to this mission
+    
+    # 1. Find all users who have this mission in their arrays
+    users_with_mission = await User.find(
+        {"$or": [
+            {"ongoing_missions": {"$elemMatch": {"$id": mission.id}}},
+            {"completed_missions": {"$elemMatch": {"$id": mission.id}}}
+        ]}
+    ).to_list()
+    
+    # 2. Remove mission from users' ongoing_missions and completed_missions arrays
+    for user in users_with_mission:
+        updated = False
+        
+        # Remove from ongoing_missions
+        if user.ongoing_missions:
+            original_count = len(user.ongoing_missions)
+            user.ongoing_missions = [m for m in user.ongoing_missions if m.id != mission.id]
+            if len(user.ongoing_missions) != original_count:
+                updated = True
+        
+        # Remove from completed_missions
+        if user.completed_missions:
+            original_count = len(user.completed_missions)
+            user.completed_missions = [m for m in user.completed_missions if m.id != mission.id]
+            if len(user.completed_missions) != original_count:
+                updated = True
+        
+        if updated:
+            await user.save()
+    
+    # 3. Clean up related MissionSubmitted entries
+    pending_reviews = await MissionSubmitted.find(MissionSubmitted.mission_id == str(mission.id)).to_list()
+    for review in pending_reviews:
+        # Also remove from users' review_pending_missions arrays
+        users_with_review = await User.find(
+            {"review_pending_missions": {"$elemMatch": {"$id": review.id}}}
+        ).to_list()
+        
+        for user in users_with_review:
+            if user.review_pending_missions:
+                user.review_pending_missions = [r for r in user.review_pending_missions if r.ref.id != review.id]
+                await user.save()
+        
+        await review.delete()
+    
+    # 4. Finally delete the mission itself
     await mission.delete()
 
     return RedirectResponse(

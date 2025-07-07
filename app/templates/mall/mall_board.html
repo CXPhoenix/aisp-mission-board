@@ -1,4 +1,247 @@
 {% extends 'base.html' %}
+
 {% block content %}
-    
+<div class="min-h-screen bg-gray-50 p-4">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header Section -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">商城</h1>
+                    <p class="text-gray-600 mt-1">探索可用的商品並使用代幣購買</p>
+                </div>
+                <div class="mt-4 md:mt-0 flex flex-col md:flex-row gap-4">
+                    <div class="bg-blue-50 px-4 py-3 rounded-lg">
+                        <div class="text-sm text-blue-600 font-medium">等級</div>
+                        <div class="text-lg font-bold text-blue-900">{{ user.level }}</div>
+                    </div>
+                    <div class="bg-green-50 px-4 py-3 rounded-lg">
+                        <div class="text-sm text-green-600 font-medium">代幣</div>
+                        <div class="text-lg font-bold text-green-900">{{ user.token }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Bar -->
+        <div class="flex flex-col md:flex-row gap-4 mb-6">
+            <a href="/user/bag.html" 
+               class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                </svg>
+                我的背包
+            </a>
+            <a href="/mall/physical-requests.html" 
+               class="inline-flex items-center px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                實體商品申請
+            </a>
+            <div class="flex-1"></div>
+            <div class="text-sm text-gray-600 flex items-center">
+                顯示 {{ products|length }} 個商品
+            </div>
+        </div>
+
+        <!-- Messages -->
+        {% if request.session.get('success') %}
+        <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium text-green-800">{{ request.session.get('success') }}</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if request.session.get('error') %}
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium text-red-800">{{ request.session.get('error') }}</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Product Cards Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for product in products %}
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+                <div class="p-6">
+                    <!-- Product Header -->
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex-1 pr-2">
+                            <h3 class="text-lg font-semibold text-gray-900 line-clamp-2">{{ product.name }}</h3>
+                            <div class="flex flex-wrap gap-1 mt-2">
+                                {% if product.product_type == 'physical' %}
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                                    </svg>
+                                    實體商品
+                                </span>
+                                {% elif product.product_type == 'level_up' %}
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                                    </svg>
+                                    等級提升
+                                </span>
+                                {% elif product.product_type == 'badge' %}
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+                                    </svg>
+                                    成就徽章
+                                </span>
+                                {% endif %}
+                                {% if product.auto_use %}
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    自動使用
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% if product.cost == 0 %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 ml-2">
+                            免費
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Product Description -->
+                    <p class="text-gray-600 text-sm mb-4 line-clamp-3">{{ product.desc }}</p>
+
+                    <!-- Product Details -->
+                    <div class="space-y-2 mb-4">
+                        {% if product.cost > 0 %}
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-500">價格</span>
+                            <span class="font-semibold text-green-600">{{ product.cost }} 代幣</span>
+                        </div>
+                        {% endif %}
+                        
+                        {% if product.level_increase > 0 %}
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-500">等級提升</span>
+                            <span class="font-semibold text-purple-600">+{{ product.level_increase }}</span>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-500">需求等級</span>
+                            <span class="font-semibold text-blue-600">Lv.{{ product.level_can_buy }}</span>
+                        </div>
+                        
+                        {% if product.stock != -1 %}
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-500">庫存</span>
+                            <span class="font-semibold text-gray-600">{{ product.stock }}</span>
+                        </div>
+                        {% endif %}
+                        
+                        {% if product.user_can_hold > 0 %}
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-500">持有限制</span>
+                            <span class="font-semibold text-gray-600">{{ product.user_can_hold }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Action Button -->
+                    <div class="pt-4 border-t border-gray-100">
+                        {% if product.can_buy %}
+                        <form method="POST" action="/mall/{{ product.id }}/buy" class="buy-product-form">
+                            <button type="submit" 
+                                    class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                                    onclick="return confirm('確定要購買此商品嗎？{% if product.cost > 0 %}\\n將扣除 {{ product.cost }} 代幣。{% endif %}{% if product.product_type == 'physical' %}\\n實體商品需要管理員審核。{% endif %}')">
+                                {% if product.cost == 0 %}
+                                    免費獲取
+                                {% else %}
+                                    購買 ({{ product.cost }} 代幣)
+                                {% endif %}
+                            </button>
+                        </form>
+                        {% else %}
+                        <button disabled class="w-full px-4 py-2 bg-gray-100 text-gray-500 rounded-lg cursor-not-allowed text-sm">
+                            {% if product.stock == 0 %}
+                                已售完
+                            {% elif user.level < product.level_can_buy %}
+                                等級不足 (需要 Lv.{{ product.level_can_buy }})
+                            {% elif user.token < product.cost %}
+                                代幣不足
+                            {% else %}
+                                無法購買
+                            {% endif %}
+                        </button>
+                        {% endif %}
+                        
+                        <!-- Detail Link -->
+                        <a href="{{ url_for('mall_detail_page', product_id=product.id) }}" 
+                           class="block text-center mt-2 text-sm text-blue-600 hover:text-blue-800">
+                            查看詳情
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Empty State -->
+        {% if not products %}
+        <div class="text-center py-12">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+            </svg>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">沒有可用的商品</h3>
+            <p class="mt-1 text-sm text-gray-500">目前商城中沒有商品，請稍後再查看。</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+</style>
 {% endblock content %}
+
+{% block js_content %}
+<script>
+// Clear session messages after displaying
+fetch('/mall/clear-session-messages', {method: 'POST'}).catch(() => {});
+
+// Add loading state to forms
+document.querySelectorAll('.buy-product-form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+        const button = this.querySelector('button[type="submit"]');
+        button.disabled = true;
+        button.innerHTML = '<span class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></span>處理中...';
+    });
+});
+</script>
+{% endblock js_content %}

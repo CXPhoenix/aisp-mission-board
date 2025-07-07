@@ -5,7 +5,7 @@ from configs import app_conf, sys_conf
 from fastapi import FastAPI, Request, status
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from models import OwnItem, Product, TransactionRecord, UseItemRecord, User, Mission, PendingMissionReview, MissionInfo
+from models import OwnItem, Product, PhysicalProductRequest, User, Mission, MissionSubmitted, MissionInfo
 from pages import auth_pages, mall_pages, mission_pages, user_pages, admin_pages
 from shared import SessionMiddleware, mclient
 from shared.types import HTTPExceptionName
@@ -22,7 +22,7 @@ OPENAPI_URL = None  # default is `/openapi.json`
 async def init_testing_user() -> None:
     user = await User.find(User.campus_id == "0826").first_or_none()
     if user is None:
-        await User(campus_id="0826", name="陳晉", password="1234qwerasdf", ).save()
+        await User(campus_id="0826", name="陳晉", password="1234qwerasdf", roles=[Role.USER, Role.MANAGER, Role.ADMIN] ).save()
 
 
 # Server 開始與結束時的事件設定
@@ -37,11 +37,8 @@ async def lifespan(app: FastAPI):
             if Role.ADMIN not in user.roles:
                 user.roles.append(Role.ADMIN)
                 await user.save()
-    await mclient.init_database_connection(app_conf.malldb, [Product])
-    await mclient.init_database_connection(
-        app_conf.recorddb, [TransactionRecord, UseItemRecord]
-    )
-    await mclient.init_database_connection("AiSP-Mission", [Mission, PendingMissionReview])
+    await mclient.init_database_connection(app_conf.malldb, [Product, PhysicalProductRequest])
+    await mclient.init_database_connection("AiSP-Mission", [Mission, MissionSubmitted])
     
     await init_testing_user()
     yield

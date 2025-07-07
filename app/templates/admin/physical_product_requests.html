@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- 標題區域 -->
+        <div class="sm:flex sm:items-center sm:justify-between mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">實體商品申請管理</h1>
+                <p class="mt-2 text-sm text-gray-600">管理所有實體商品的申請與配送</p>
+            </div>
+        </div>
+
+        <!-- 狀態過濾器 -->
+        <div class="bg-white shadow sm:rounded-lg mb-6">
+            <div class="px-4 py-5 sm:p-6">
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="filterByStatus('all')" class="filter-btn px-4 py-2 text-sm font-medium rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200">
+                        全部
+                    </button>
+                    {% for status in status_options %}
+                    <button onclick="filterByStatus('{{ status.value }}')" class="filter-btn px-4 py-2 text-sm font-medium rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200">
+                        {{ status.label }}
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- 申請列表 -->
+        <div class="bg-white shadow overflow-hidden sm:rounded-md">
+            {% if requests %}
+                <ul class="divide-y divide-gray-200" id="requests-list">
+                    {% for request in requests %}
+                    <li class="request-item" data-status="{{ request.status }}">
+                        <div class="px-4 py-4">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center space-x-3">
+                                            <h3 class="text-lg font-medium text-gray-900">
+                                                {{ request.product.name }}
+                                            </h3>
+                                            <!-- 狀態標籤 -->
+                                            {% if request.status == 'pending' %}
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                待審核
+                                            </span>
+                                            {% elif request.status == 'approved' %}
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                已核准
+                                            </span>
+                                            {% elif request.status == 'rejected' %}
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                已拒絕
+                                            </span>
+                                            {% elif request.status == 'fulfilled' %}
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                已完成
+                                            </span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="text-sm text-gray-500">
+                                            {{ request.request_time.strftime('%Y-%m-%d %H:%M') }}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-2 text-sm text-gray-600">
+                                        <p><strong>申請人：</strong>{{ request.user_name }} ({{ request.user_campus_id }})</p>
+                                        {% if request.product.desc %}
+                                        <p><strong>商品描述：</strong>{{ request.product.desc }}</p>
+                                        {% endif %}
+                                        {% if request.admin_campus_id %}
+                                        <p><strong>審核管理員：</strong>{{ request.admin_name or request.admin_campus_id }}</p>
+                                        {% endif %}
+                                        {% if request.approval_time %}
+                                        <p><strong>審核時間：</strong>{{ request.approval_time.strftime('%Y-%m-%d %H:%M') }}</p>
+                                        {% endif %}
+                                        {% if request.admin_notes %}
+                                        <p><strong>管理員備註：</strong>{{ request.admin_notes }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <!-- 操作按鈕 -->
+                                <div class="ml-4 flex items-center space-x-2">
+                                    <button onclick="showUpdateModal('{{ request.id }}', '{{ request.status }}', '{{ request.admin_notes|replace("'", "\\'") }}')" 
+                                            class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                        更新狀態
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="text-center py-12">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900">暫無申請記錄</h3>
+                    <p class="mt-1 text-sm text-gray-500">目前沒有任何實體商品申請</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- 返回控制台 -->
+        <div class="mt-6">
+            <a href="{{ url_for('admin_index_page') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                返回控制台
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- 更新狀態彈出視窗 -->
+<div id="updateModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">更新申請狀態</h3>
+            <form id="updateForm" method="POST">
+                <div class="mb-4">
+                    <label for="status" class="block text-sm font-medium text-gray-700">狀態</label>
+                    <select name="status" id="status" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm">
+                        {% for status in status_options %}
+                        <option value="{{ status.value }}">{{ status.label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="admin_notes" class="block text-sm font-medium text-gray-700">管理員備註</label>
+                    <textarea name="admin_notes" id="admin_notes" rows="3" 
+                              class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm"></textarea>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="hideUpdateModal()" 
+                            class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        取消
+                    </button>
+                    <button type="submit" 
+                            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700">
+                        更新
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// 顯示更新彈出視窗
+function showUpdateModal(requestId, currentStatus, currentNotes) {
+    document.getElementById('updateForm').action = `/admin/physical-requests/update/${requestId}`;
+    document.getElementById('status').value = currentStatus;
+    document.getElementById('admin_notes').value = currentNotes;
+    document.getElementById('updateModal').classList.remove('hidden');
+}
+
+// 隱藏更新彈出視窗
+function hideUpdateModal() {
+    document.getElementById('updateModal').classList.add('hidden');
+}
+
+// 按狀態過濾
+function filterByStatus(status) {
+    const items = document.querySelectorAll('.request-item');
+    const buttons = document.querySelectorAll('.filter-btn');
+    
+    // 重置所有按鈕樣式
+    buttons.forEach(btn => {
+        btn.classList.remove('bg-blue-100', 'text-blue-800');
+        btn.classList.add('bg-gray-100', 'text-gray-700');
+    });
+    
+    // 高亮當前選中的按鈕
+    event.target.classList.remove('bg-gray-100', 'text-gray-700');
+    event.target.classList.add('bg-blue-100', 'text-blue-800');
+    
+    // 過濾項目
+    items.forEach(item => {
+        if (status === 'all' || item.getAttribute('data-status') === status) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+// 點擊模態框外部關閉
+window.onclick = function(event) {
+    const modal = document.getElementById('updateModal');
+    if (event.target == modal) {
+        hideUpdateModal();
+    }
+}
+</script>
+{% endblock content %}
