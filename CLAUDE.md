@@ -23,6 +23,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - No specific testing framework configured yet
 - No linting tools configured in pyproject.toml
 - Manual testing through FastAPI's automatic API docs at `/docs`
+- **Important**: When making changes, verify functionality by testing the web interface directly
+
+### TailwindCSS Development
+- TailwindCSS build command: `pnpm build` (in tailwind_styles directory)
+- Watch mode: `pnpx @tailwindcss/cli -i ./src/input.css -o ./dist/style.css --watch`
+- Styles are mounted as volume in Docker for live reloading
 
 ## Architecture Overview
 
@@ -54,10 +60,12 @@ app/
 ```
 
 ### Database Architecture
-- **Multiple MongoDB databases** managed through `MongoDbClient` class
+- **Multiple MongoDB databases** managed through `MongoDbClient` class in `app/shared/odm.py`
 - Databases: `userdb`, `malldb`, `recorddb`, `AiSP-Mission`, `App-Config`
 - Models are organized by feature: User, Mission, Product, TransactionRecord, etc.
 - Database connections initialized during FastAPI lifespan with specific collections per database
+- Each model specifies its collection name through Beanie settings
+- **Connection Pattern**: Database connections are established in `main.py` lifespan function
 
 ### Key Design Patterns
 - **ODM with Beanie**: All models inherit from Beanie Document for MongoDB operations
@@ -102,21 +110,69 @@ app/
 - Password hashing with bcrypt
 - Role-based access control (USER, MANAGER, ADMIN)
 - Environment variables for sensitive configuration
+- OpenAPI documentation disabled in production (DOCS_URL=None)
 
 ### Multi-Database Design
 - Each database serves specific domain purposes
 - Cross-database relationships managed through Beanie's Link/BackLink
 - Connection pooling handled by MongoDbClient class
+- **Database Initialization**: Admin users are automatically promoted during app startup
+
+### Error Handling
+- Custom HTTP exception handler with localized error pages
+- Template-based error responses with return navigation
+- Static file serving with cache-busting for development
 
 ### Current Development Status
 - Core user and mission management: ✅ Complete
 - Admin interface: ✅ Complete
-- Virtual mall system: 🚧 In development
-- Achievement system: 🚧 Planned
+- Virtual mall system: ✅ Complete (including physical product requests)
+- Achievement system: 🚧 Planned (badge.py model exists but not integrated)
 - Testing framework: ❌ Not configured
 
 ### Service Access Points
 - Main app: `http://localhost:8000`
 - MongoDB Express: `http://localhost:8081`
-- API documentation: `http://localhost:8000/docs`
-- ReDoc: `http://localhost:8000/redoc`
+- API documentation: `http://localhost:8000/docs` (disabled in production)
+- ReDoc: `http://localhost:8000/redoc` (disabled in production)
+
+### Logging Configuration
+- Log configuration managed through `app/log_config.yaml`
+- Logs stored in `./data/logs/` directory
+- Rotating file handlers with 10MB max size and 5 backup files
+- Separate handlers for application events and access logs
+- Custom UTC+8 formatters for Taiwan timezone
+
+### Environment Setup
+- Environment files in `env.d/` directory with `.example` templates
+- Required environment variables:
+  - `MONGODB_*`: Database connection settings
+  - `SYSTEM_SESSION_SECRET`: Session encryption key
+  - `APP_*`: Application configuration (databases, admin users)
+- Admin users configured via `APP_ADMINS` environment variable (colon-separated)
+
+## Development Best Practices
+
+### Code Editing Guidelines
+- Always read existing code patterns before making changes
+- Follow the existing routing structure in `pages/` directory
+- Use the established ODM patterns from `models/` directory
+- Maintain consistency with the existing template structure
+
+### Database Operations
+- Always use Beanie ODM for database operations
+- Reference the `MongoDbClient` class in `shared/odm.py` for connection patterns
+- Follow the multi-database architecture when creating new models
+- Use appropriate database for each domain (user data → userdb, products → malldb, etc.)
+
+### Template Development
+- All templates extend `base.html`
+- Use the `WebPage` utility class from `shared/webpage.py` for consistent rendering
+- Follow the established pattern of organizing templates by feature in subdirectories
+- Maintain the TailwindCSS + Flowbite component structure
+
+### Important Notes
+- The application uses server-side rendering with Jinja2 templates
+- All user-facing content should be in Traditional Chinese (Taiwan)
+- Testing must be done through the web interface as no automated testing framework is configured
+- Always verify database connections and model relationships when making changes
