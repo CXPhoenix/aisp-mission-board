@@ -55,7 +55,7 @@ AiSP Mission Board 是為復興高中 AI 資安學程 (FHSH AI & Cybersecurity P
 ### 1. 複製專案
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/CXPhoenix/aisp-mission-board.git
 cd aisp-mission-board
 ```
 
@@ -82,9 +82,9 @@ docker-compose up app mongo
 
 ### 4. 存取應用程式
 
-- **應用程式主頁**: http://localhost:8000
-- **MongoDB Express**: http://localhost:8081
-- **API 文件**: http://localhost:8000/docs
+![Cloudflare](https://img.shields.io/badge/Tunnel_Service-BF6BF2?logo=Cloudflare&logoColor=white&label=Cloudflare&labelColor=F38020)
+
+所有服務均透過 Cloudflare Tunnel 服務提供存取。
 
 ## 專案結構
 
@@ -180,7 +180,7 @@ docker-compose down
 
 ## API 文件（目前未開放）
 
-![Version](https://img.shields.io/badge/Open_API_Documentation-Concealed-orange.svg)
+![Concealed](https://img.shields.io/badge/Open_API_Documentation-Concealed-orange.svg)
 
 ## 功能狀態
 
