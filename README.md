@@ -1,6 +1,6 @@
 # AiSP Mission Board
 
-![Version](https://img.shields.io/badge/version-v0.5.0-blue.svg)
+![Version](https://img.shields.io/badge/version-v0.6.0-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.12+-green.svg)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-red.svg)
 ![MongoDB](https://img.shields.io/badge/MongoDB-7.0+-green.svg)
@@ -8,7 +8,7 @@
 > [!NOTE]
 > Author: @CXPhoenix
 >
-> Version: 0.5.0
+> Version: 0.6.0
 > 
 > **注意**: 本專案目前處於開發階段，部分功能尚未完全實作。請參考下方的 TODO 清單瞭解開發進度。
 
@@ -25,19 +25,21 @@ AiSP Mission Board 是為復興高中 AI 資安學程 (FHSH AI & Cybersecurity P
 - 🏆 **遊戲化機制**：等級系統、Token 獎勵、任務進度追蹤
 - 🛍️ **虛擬商城**：使用 Token 購買物品，包含實體商品申請功能
 - 👨‍💼 **管理者介面**：任務審核、使用者管理、統計報表
+- 🔄 **資料庫遷移系統**：自動化資料庫架構管理與 CLI 工具
 
 ## 技術架構
 
-### 後端技術棧
+### 後端 Tech Stack
 
 - **Web Framework**: FastAPI
 - **Database**: MongoDB with Beanie ODM
+- **Migration System**: Beanie ODM with CLI tools
 - **Template Engine**: Jinja2
 - **Authentication**: Session-based
 - **Package Manager**: uv
 - **Containerization**: Docker & Docker Compose
 
-### 前端技術棧
+### 前端 Tech Stack
 
 - **CSS Framework**: TailwindCSS
 - **JavaScript**: Vanilla JS
@@ -84,7 +86,7 @@ docker-compose up app mongo
 
 ![Cloudflare](https://img.shields.io/badge/Tunnel_Service-BF6BF2?logo=Cloudflare&logoColor=white&label=Cloudflare&labelColor=F38020)
 
-所有服務均透過 Cloudflare Tunnel 服務提供存取。
+所有服務皆透過 Cloudflare Tunnel 服務提供存取。
 
 ## 專案結構
 
@@ -93,6 +95,9 @@ aisp-mission-board/
 ├── app/
 │   ├── main.py              # FastAPI 應用程式進入點
 │   ├── configs/             # 組態設定類別
+│   ├── migrations/          # Beanie ODM 資料庫遷移檔案
+│   ├── migration_cli.py     # 遷移系統 CLI 工具
+│   ├── migration_runner.py  # 自動遷移執行器
 │   ├── models/              # Beanie ODM 模型
 │   │   ├── user.py         # 使用者模型
 │   │   ├── mission.py      # 任務模型
@@ -127,6 +132,7 @@ aisp-mission-board/
 │   ├── db/                # MongoDB 資料
 │   └── logs/              # 應用程式日誌
 ├── env.d/                 # 環境變數設定檔案
+├── MIGRATION_TUTORIAL.md  # 遷移系統教學文件
 ├── docker-compose.yml     # Docker 服務組態
 └── pyproject.toml         # Python 專案設定
 ```
@@ -148,6 +154,54 @@ aisp-mission-board/
 - **ADMIN**: 系統管理員，具有完整的管理權限
 
 ## 開發命令
+
+### 資料庫遷移
+
+#### 使用官方 Beanie CLI（推薦）
+
+```bash
+# 建立新的遷移檔案
+docker-compose exec app uv run beanie new-migration -n <migration_name> -p /app/migrations
+
+# 執行遷移（Forward）
+docker-compose exec app uv run beanie migrate -uri mongodb://user:pass@mongo:27017 -db <database_name> -p /app/migrations
+
+# 回滾遷移（Backward）
+docker-compose exec app uv run beanie migrate -uri mongodb://user:pass@mongo:27017 -db <database_name> -p /app/migrations --backward
+
+# 限制遷移距離
+docker-compose exec app uv run beanie migrate -uri mongodb://user:pass@mongo:27017 -db <database_name> -p /app/migrations --distance 1
+```
+
+#### 使用容器 CLI 封裝器
+
+```bash
+# 建立新的遷移檔案
+docker-compose exec app uv run python -m app.migration_cli new <migration_name>
+
+# 執行所有配置資料庫的遷移
+docker-compose exec app uv run python -m app.migration_cli migrate
+
+# 針對特定資料庫執行遷移
+docker-compose exec app uv run python -m app.migration_cli migrate --database userdb --distance 1
+
+# 預覽遷移操作
+docker-compose exec app uv run python -m app.migration_cli migrate --dry-run
+
+# 檢查遷移狀態
+docker-compose exec app uv run python -m app.migration_cli status
+
+# 初始化遷移系統
+docker-compose exec app uv run python -m app.migration_cli init
+```
+
+#### 遷移開發流程
+
+1. **修改模型**：編輯 `app/models/` 目錄中的 Beanie ODM 模型
+2. **建立遷移**：使用 CLI 建立遷移檔案
+3. **實作遷移**：編輯生成的遷移檔案，使用 Forward/Backward 類別結構
+4. **測試遷移**：在開發環境中測試遷移作業的正確性
+5. **部署**：容器重啟時自動執行待處理的遷移
 
 ### 本地開發
 
@@ -214,6 +268,15 @@ docker-compose down
   - 實體商品申請審核
   - 統計報表
 
+- **資料庫遷移系統**
+  - 官方 Beanie ODM 遷移框架整合
+  - Forward/Backward 遷移類別結構
+  - 容器化 CLI 工具封裝器
+  - 應用程式啟動時自動執行遷移
+  - 多資料庫遷移支援（userdb、malldb、recorddb、AiSP-Mission）
+  - Iterative 和 Free-fall 遷移模式
+  - 遷移狀態追蹤與預覽功能
+
 ### 🚧 開發中功能
 
 - **成就系統**
@@ -270,7 +333,24 @@ docker-compose down
 
 ## 版本歷史
 
-### v0.5.0 (目前版本)
+### v0.6.0 (目前版本)
+- 🔄 **實作完整的 Beanie ODM 資料庫遷移系統**
+  - 整合官方 Beanie ODM 遷移框架，支援 Forward/Backward 遷移結構
+  - 新增容器化 CLI 工具封裝器，方便在 Docker 環境中進行遷移管理
+  - 實作 FastAPI 應用程式啟動時自動執行遷移功能
+  - 提供多資料庫遷移支援，涵蓋 userdb、malldb、recorddb、AiSP-Mission 等多個資料庫
+  - 支援 Iterative 和 Free-fall 兩種遷移模式
+  - 新增遷移狀態追蹤、預覽功能與完整的 CLI 命令支援
+- 🔐 **新增使用者密碼變更功能**
+  - 提供使用者自助密碼變更介面與後端驗證機制
+- 📚 **完善遷移系統文件**
+  - 新增 MIGRATION_TUTORIAL.md 詳細教學文件
+  - 更新 CLAUDE.md 開發指南，包含遷移系統最佳實踐
+- 🎨 **優化管理介面與模板**
+  - 改善管理者介面的樣式與使用者體驗
+  - 更新基礎模板與公共資源
+
+### v0.5.0
 - 🛍️ 完整實作虛擬商城系統與實體商品申請功能
 - 🔧 新增 MongoDB 服務健康檢查與依賴更新
 - 📝 更新專案描述以反映正確的程式名稱
