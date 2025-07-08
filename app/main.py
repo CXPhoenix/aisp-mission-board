@@ -1,13 +1,12 @@
 from contextlib import asynccontextmanager
 from typing import Any
-import logging
 
 from configs import app_conf, sys_conf
 from fastapi import FastAPI, Request, status
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from models import OwnItem, Product, PhysicalProductRequest, User, Mission, MissionSubmitted, MissionInfo
-from migration_runner import migration_runner
+# from migration_runner import migration_runner
 from pages import auth_pages, mall_pages, mission_pages, user_pages, admin_pages
 from shared import SessionMiddleware, mclient
 from shared.types import HTTPExceptionName
@@ -44,27 +43,27 @@ async def lifespan(app: FastAPI):
     
     await init_testing_user()
     
-    # Run pending migrations automatically
-    try:
-        logger = logging.getLogger(__name__)
-        logger.info("Checking for pending migrations...")
+    # # Run pending migrations automatically
+    # try:
+    #     logger = logging.getLogger(__name__)
+    #     logger.info("Checking for pending migrations...")
         
-        has_pending = await migration_runner.check_pending_migrations()
-        if has_pending:
-            logger.info("Running pending migrations...")
-            success = await migration_runner.run_all_migrations()
-            if success:
-                logger.info("All migrations completed successfully")
-            else:
-                logger.warning("Some migrations failed, but application will continue")
-        else:
-            logger.info("No pending migrations found")
+    #     has_pending = await migration_runner.check_pending_migrations()
+    #     if has_pending:
+    #         logger.info("Running pending migrations...")
+    #         success = await migration_runner.run_all_migrations()
+    #         if success:
+    #             logger.info("All migrations completed successfully")
+    #         else:
+    #             logger.warning("Some migrations failed, but application will continue")
+    #     else:
+    #         logger.info("No pending migrations found")
             
-    except Exception as e:
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.error(f"Migration auto-execution failed: {str(e)}")
-        logger.warning("Application will continue without migrations")
+    # except Exception as e:
+    #     import logging
+    #     logger = logging.getLogger(__name__)
+    #     logger.error(f"Migration auto-execution failed: {str(e)}")
+    #     logger.warning("Application will continue without migrations")
     
     yield
     mclient.close_connection()

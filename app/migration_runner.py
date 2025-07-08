@@ -9,6 +9,54 @@ from typing import List, Optional
 
 from beanie.migrations.controllers.iterative import IterativeMigrationController
 from beanie.migrations.controllers.free_fall import FreeFallMigrationController
+""" Error
+aisp-mission-board-app-1  | [2025-07-08 08:53:55 UTC+08:00] WARNING:  StatReload detected changes in 'main.py'. Reloading...
+aisp-mission-board-app-1  | Process SpawnProcess-2:
+aisp-mission-board-app-1  | Traceback (most recent call last):
+aisp-mission-board-app-1  |   File "/usr/local/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+aisp-mission-board-app-1  |     self.run()
+aisp-mission-board-app-1  |   File "/usr/local/lib/python3.12/multiprocessing/process.py", line 108, in run
+aisp-mission-board-app-1  |     self._target(*self._args, **self._kwargs)
+aisp-mission-board-app-1  |   File "/usr/local/lib/python3.12/site-packages/uvicorn/_subprocess.py", line 80, in subprocess_started
+aisp-mission-board-app-1  |     target(sockets=sockets)
+aisp-mission-board-app-1  |   File "/usr/local/lib/python3.12/site-packages/uvicorn/server.py", line 66, in run
+aisp-mission-board-app-1  |     return asyncio.run(self.serve(sockets=sockets))
+aisp-mission-board-app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+aisp-mission-board-app-1  |   File "/usr/local/lib/python3.12/asyncio/runners.py", line 195, in run
+aisp-mission-board-app-1  |     return runner.run(main)
+aisp-mission-board-app-1  |            ^^^^^^^^^^^^^^^^
+aisp-mission-board-app-1  |   File "/usr/local/lib/python3.12/asyncio/runners.py", line 118, in run
+aisp-mission-board-app-1  |     return self._loop.run_until_complete(task)
+aisp-mission-board-app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+aisp-mission-board-app-1  |   File "/usr/local/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+aisp-mission-board-app-1  |     return future.result()
+aisp-mission-board-app-1  |            ^^^^^^^^^^^^^^^
+aisp-mission-board-app-1  |   File "/usr/local/lib/python3.12/site-packages/uvicorn/server.py", line 70, in serve
+aisp-mission-board-app-1  |     await self._serve(sockets)
+aisp-mission-board-app-1  |   File "/usr/local/lib/python3.12/site-packages/uvicorn/server.py", line 77, in _serve
+aisp-mission-board-app-1  |     config.load()
+aisp-mission-board-app-1  |   File "/usr/local/lib/python3.12/site-packages/uvicorn/config.py", line 435, in load
+aisp-mission-board-app-1  |     self.loaded_app = import_from_string(self.app)
+aisp-mission-board-app-1  |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+aisp-mission-board-app-1  |   File "/usr/local/lib/python3.12/site-packages/uvicorn/importer.py", line 19, in import_from_string
+aisp-mission-board-app-1  |     module = importlib.import_module(module_str)
+aisp-mission-board-app-1  |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+aisp-mission-board-app-1  |   File "/usr/local/lib/python3.12/importlib/__init__.py", line 90, in import_module
+aisp-mission-board-app-1  |     return _bootstrap._gcd_import(name[level:], package, level)
+aisp-mission-board-app-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+aisp-mission-board-app-1  |   File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+aisp-mission-board-app-1  |   File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+aisp-mission-board-app-1  |   File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+aisp-mission-board-app-1  |   File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+aisp-mission-board-app-1  |   File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+aisp-mission-board-app-1  |   File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+aisp-mission-board-app-1  |   File "/app/main.py", line 10, in <module>
+aisp-mission-board-app-1  |     from migration_runner import migration_runner
+aisp-mission-board-app-1  |   File "/app/migration_runner.py", line 10, in <module>
+aisp-mission-board-app-1  |     from beanie.migrations.controllers.iterative import IterativeMigrationController
+aisp-mission-board-app-1  | ImportError: cannot import name 'IterativeMigrationController' from 'beanie.migrations.controllers.iterative' (/usr/local/lib/python3.12/site-packages/beanie/migrations/controllers/iterative.py)
+"""
+
 from beanie.migrations.models import MigrationLog, RunningDirections
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
