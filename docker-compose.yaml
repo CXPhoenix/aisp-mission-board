@@ -19,6 +19,7 @@ services:
       - 8000 
     volumes:
       - ./data/logs:/temp/logs
+      - ./app/public/assets:/app/public/assets # for tailwindcss style.css
   
   tw:
     image: fhsh/mission-board-tw:latest
