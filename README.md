@@ -1,6 +1,6 @@
 # AiSP Mission Board
 
-![Version](https://img.shields.io/badge/version-v0.6.0-blue.svg)
+![Version](https://img.shields.io/badge/version-v0.6.1-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.12+-green.svg)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-red.svg)
 ![MongoDB](https://img.shields.io/badge/MongoDB-7.0+-green.svg)
@@ -8,7 +8,7 @@
 > [!NOTE]
 > Author: @CXPhoenix
 >
-> Version: 0.6.0
+> Version: 0.6.1
 > 
 > **注意**: 本專案目前處於開發階段，部分功能尚未完全實作。請參考下方的 TODO 清單瞭解開發進度。
 
@@ -333,7 +333,17 @@ docker-compose down
 
 ## 版本歷史
 
-### v0.6.0 (目前版本)
+### v0.6.1 (目前版本)
+- ✨ **改進遷移指令與文件**
+  - 在 `README.md` 中，將官方 Beanie CLI 標記為建議使用的主要工具，並簡化自訂封裝器的說明。
+  - 大幅擴充 `README.md` 文件，新增更詳細的架構說明、開發指令與功能狀態。
+- 🏗️ **重構 ODM 連結工具**
+  - 新增 `app/shared/link_utils.py` 模組，集中處理 Beanie ODM 的 `Link` 與 `BackLink` 關聯，提升程式碼可讀性與可維護性。
+- 🐛 **錯誤修復與優化**
+  - 修正管理者介面中部分表單的顯示問題。
+  - 優化使用者 Session 處理邏輯，提高系統穩定性。
+
+### v0.6.0
 - 🔄 **實作完整的 Beanie ODM 資料庫遷移系統**
   - 整合官方 Beanie ODM 遷移框架，支援 Forward/Backward 遷移結構
   - 新增容器化 CLI 工具封裝器，方便在 Docker 環境中進行遷移管理
