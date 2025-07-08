@@ -195,7 +195,7 @@ document.querySelector('form').addEventListener('submit', function(e) {
     const roles = document.querySelectorAll('input[name="roles"]:checked');
     if (roles.length === 0) {
         e.preventDefault();
-        alert('請至少選擇一個角色！');
+        showAlert('請至少選擇一個角色！', '表單驗證錯誤');
         return;
     }
     
@@ -205,19 +205,19 @@ document.querySelector('form').addEventListener('submit', function(e) {
     
     if (level < 1) {
         e.preventDefault();
-        alert('等級必須大於等於1！');
+        showAlert('等級必須大於等於1！', '表單驗證錯誤');
         return;
     }
     
     if (token < 0) {
         e.preventDefault();
-        alert('代幣不能小於0！');
+        showAlert('代幣不能小於0！', '表單驗證錯誤');
         return;
     }
     
     if (maxMissions < 1 || maxMissions > 10) {
         e.preventDefault();
-        alert('最大任務數必須在1-10之間！');
+        showAlert('最大任務數必須在1-10之間！', '表單驗證錯誤');
         return;
     }
 });

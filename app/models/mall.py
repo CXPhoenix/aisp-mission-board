@@ -29,6 +29,8 @@ class Product(Document):
     @model_validator(mode='after')
     def validate_product_settings(self):
         """根據商品類型自動設定相關屬性"""
+        # 只有實體物品有這個要求，因此預設為 False，實體物品類別會轉為 True
+        self.is_physical = False
         if self.product_type == ProductType.LEVEL_UP:
             # 等級提升道具必須自動使用
             self.auto_use = True
@@ -41,8 +43,6 @@ class Product(Document):
             # 成就徽章玩家不能使用
             self.user_can_use = False
             self.auto_use = False
-        
-        # 標準商品不處理，由管理者設定
         
         return self
 

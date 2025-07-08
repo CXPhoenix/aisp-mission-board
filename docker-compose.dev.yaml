@@ -16,7 +16,9 @@ services:
       - app
       - tunnel
     expose:
-      - 8000 
+      - 8000
+    ports:
+      - '8000:8000'
     volumes:
       - ./app:/app # for development
       - ./data/logs:/temp/logs
@@ -66,15 +68,17 @@ services:
       - tunnel
     expose:
       - 8081
+    ports:
+      - '8081:8081'
   
-  cf:
-    image: cloudflare/cloudflared:latest
-    restart: always
-    env_file:
-      - env.d/cf.env
-    networks:
-      - tunnel
-    command: tunnel run
+  # cf:
+  #   image: cloudflare/cloudflared:latest
+  #   restart: always
+  #   env_file:
+  #     - env.d/cf.env
+  #   networks:
+  #     - tunnel
+  #   command: tunnel run
 
 networks:
   app:

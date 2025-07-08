@@ -64,17 +64,17 @@
                                     {% if review.review_status.value == 0b001 %}
                                     <form method="POST" action="{{ url_for('review_approve_action', review_id=review.id) }}" class="inline">
                                         <input type="hidden" name="comments" value="">
-                                        <button type="submit" 
+                                        <button type="button" 
                                                 class="inline-flex items-center px-3 py-2 border border-green-300 text-sm font-medium rounded-md text-green-700 bg-white hover:bg-green-50"
-                                                onclick="const comment = prompt('審核意見（可選）:'); if (comment !== null) { this.previousElementSibling.value = comment; return true; } return false;">
+                                                onclick="const form = this.closest('form'); showPrompt('審核意見（可選）:', '審核通過', '', false, (comment) => { form.querySelector('input[name=comments]').value = comment; form.submit(); });">
                                             通過
                                         </button>
                                     </form>
                                     <form method="POST" action="{{ url_for('review_reject_action', review_id=review.id) }}" class="inline">
                                         <input type="hidden" name="comments" value="">
-                                        <button type="submit" 
+                                        <button type="button" 
                                                 class="inline-flex items-center px-3 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50"
-                                                onclick="const comment = prompt('拒絕原因:'); if (comment !== null && comment.trim() !== '') { this.previousElementSibling.value = comment; return true; } alert('請輸入拒絕原因'); return false;">
+                                                onclick="const form = this.closest('form'); showPrompt('拒絕原因:', '審核拒絕', '', true, (comment) => { form.querySelector('input[name=comments]').value = comment; form.submit(); });">
                                             拒絕
                                         </button>
                                     </form>

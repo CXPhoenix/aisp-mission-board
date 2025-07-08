@@ -126,6 +126,14 @@
                         <a href="{{ url_for('product_create_page') }}" class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                             新增商品
                         </a>
+                        <a href="{{ url_for('physical_product_requests_page') }}" class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700">
+                            審核申請
+                            {% if stats.pending_physical_requests > 0 %}
+                            <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                {{ stats.pending_physical_requests }}
+                            </span>
+                            {% endif %}
+                        </a>
                     </div>
                 </div>
             </div>

@@ -150,9 +150,9 @@
                         </button>
                         {% elif mission.can_accept %}
                         <form method="POST" action="/mission/{{ mission.id }}/accept" class="accept-mission-form">
-                            <button type="submit" 
+                            <button type="button" 
                                     class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-                                    onclick="return confirm('確定要接受此任務嗎？{% if mission.invest > 0 %}\\n將扣除 {{ mission.invest }} 代幣作為押金。{% endif %}')">
+                                    onclick="const form = this.closest('form'); const message = '確定要接受此任務嗎？{% if mission.invest > 0 %}\\n將扣除 {{ mission.invest }} 代幣作為押金。{% endif %}'; showConfirm(message, '接受任務', () => form.submit())">
                                 接受任務
                             </button>
                         </form>

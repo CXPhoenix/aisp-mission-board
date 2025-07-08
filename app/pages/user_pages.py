@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, Request, status
+from fastapi import APIRouter, Depends, Request, status, Form
+from fastapi.responses import RedirectResponse
 from shared import WebPage
 from shared.dependencies import get_current_user
 from shared.types import Role, MissionReviewState
@@ -188,9 +189,17 @@ async def user_use_item(
             success_msg = f"使用 '{product.name}' 成功，等級提升至 {user.level}"
             
         elif product.product_type == ProductType.PHYSICAL:
-            # 實體商品不應該出現在背包中，但如果出現了就不允許使用
-            request.session["error"] = "實體商品無法通過背包使用"
-            return RedirectResponse(url=request.url_for("user_bag_page"), status_code=302)
+            # 實體商品：創建申請記錄
+            from models.mall import PhysicalProductRequest
+            from shared.types import PhysicalProductRequestStatus
+            
+            physical_request = PhysicalProductRequest(
+                product=product,
+                user_campus_id=user.campus_id,
+                status=PhysicalProductRequestStatus.PENDING
+            )
+            await physical_request.save()
+            success_msg = f"已提交 '{product.name}' 實體商品申請，等待管理員審核"
             
         elif product.product_type == ProductType.BADGE:
             # 徽章不能使用
@@ -237,3 +246,56 @@ async def clear_session_messages(request: Request):
     request.session.pop("success", None)
     request.session.pop("error", None)
     return {"status": "ok"}
+
+
+@router.get("/change-password.html")
+@WebPage.build().page("user/change_password.html", "修改密碼")
+async def change_password_page(request: Request, user: Annotated[User, Depends(get_current_user)]):
+    context = {
+        "user": {
+            "name": user.name,
+            "campus_id": user.campus_id
+        }
+    }
+    return context
+
+
+@router.post("/change-password")
+async def change_password(
+    request: Request,
+    current_password: Annotated[str, Form()],
+    new_password: Annotated[str, Form()],
+    confirm_password: Annotated[str, Form()],
+    user: Annotated[User, Depends(get_current_user)]
+):
+    try:
+        # 驗證當前密碼是否正確
+        if not user.verify_passwd(current_password):
+            request.session["error"] = "當前密碼不正確"
+            return RedirectResponse(url=request.url_for("change_password_page"), status_code=302)
+        
+        # 驗證新密碼與確認密碼是否一致
+        if new_password != confirm_password:
+            request.session["error"] = "新密碼與確認密碼不一致"
+            return RedirectResponse(url=request.url_for("change_password_page"), status_code=302)
+        
+        # 驗證新密碼強度（至少 8 字符）
+        if len(new_password) < 8:
+            request.session["error"] = "新密碼至少需要 8 個字符"
+            return RedirectResponse(url=request.url_for("change_password_page"), status_code=302)
+        
+        # 檢查新密碼是否與當前密碼相同
+        if user.verify_passwd(new_password):
+            request.session["error"] = "新密碼不能與當前密碼相同"
+            return RedirectResponse(url=request.url_for("change_password_page"), status_code=302)
+        
+        # 更新用戶密碼
+        user.password = new_password  # 會自動透過 HashPasswd 進行雜湊
+        await user.save()
+        
+        request.session["success"] = "密碼修改成功"
+        return RedirectResponse(url=request.url_for("user_index_page"), status_code=302)
+        
+    except Exception as e:
+        request.session["error"] = f"密碼修改失敗: {str(e)}"
+        return RedirectResponse(url=request.url_for("change_password_page"), status_code=302)

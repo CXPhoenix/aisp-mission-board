@@ -1072,8 +1072,16 @@
     inset-inline-end: calc(var(--spacing) * 0);
   }
 
+  .end-2\.5 {
+    inset-inline-end: calc(var(--spacing) * 2.5);
+  }
+
   .top-0 {
     top: calc(var(--spacing) * 0);
+  }
+
+  .top-3 {
+    top: calc(var(--spacing) * 3);
   }
 
   .top-20 {
@@ -1156,6 +1164,14 @@
 
   .mx-auto {
     margin-inline: auto;
+  }
+
+  .ms-auto {
+    margin-inline-start: auto;
+  }
+
+  .me-2 {
+    margin-inline-end: calc(var(--spacing) * 2);
   }
 
   .mt-1 {
@@ -1274,6 +1290,10 @@
 
   .mb-4 {
     margin-bottom: calc(var(--spacing) * 4);
+  }
+
+  .mb-5 {
+    margin-bottom: calc(var(--spacing) * 5);
   }
 
   .mb-6 {
@@ -2666,9 +2686,18 @@
     font-weight: var(--font-weight-medium);
   }
 
+  .font-normal {
+    --tw-font-weight: var(--font-weight-normal);
+    font-weight: var(--font-weight-normal);
+  }
+
   .font-semibold {
     --tw-font-weight: var(--font-weight-semibold);
     font-weight: var(--font-weight-semibold);
+  }
+
+  .whitespace-pre-line {
+    white-space: pre-line;
   }
 
   .whitespace-pre-wrap {
@@ -2851,6 +2880,10 @@
     font-style: italic;
   }
 
+  .placeholder-gray-400::placeholder {
+    color: var(--color-gray-400);
+  }
+
   .placeholder-gray-500::placeholder {
     color: var(--color-gray-500);
   }
@@ -3024,6 +3057,10 @@
       background-color: var(--color-red-700);
     }
 
+    .hover\:bg-red-800:hover {
+      background-color: var(--color-red-800);
+    }
+
     .hover\:bg-white:hover {
       background-color: var(--color-white);
     }
@@ -3132,6 +3169,10 @@
     --tw-ring-color: var(--color-purple-500);
   }
 
+  .focus\:ring-red-300:focus {
+    --tw-ring-color: var(--color-red-300);
+  }
+
   .focus\:ring-red-500:focus {
     --tw-ring-color: var(--color-red-500);
   }
@@ -3195,6 +3236,10 @@
       grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 
+    .sm\:grid-cols-5 {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
     .sm\:items-center {
       align-items: center;
     }
@@ -3256,6 +3301,10 @@
 
     .md\:justify-between {
       justify-content: space-between;
+    }
+
+    .md\:p-5 {
+      padding: calc(var(--spacing) * 5);
     }
   }
 
@@ -3398,6 +3447,10 @@
 
     .dark\:text-white {
       color: var(--color-white);
+    }
+
+    .dark\:placeholder-gray-400::placeholder {
+      color: var(--color-gray-400);
     }
 
     @media (hover: hover) {

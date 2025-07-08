@@ -185,19 +185,7 @@ async def mall_buy_product(
             await product.save()
         
         # 根據商品類型處理
-        if product.product_type == ProductType.PHYSICAL:
-            # 實體商品：創建申請記錄
-            physical_request = PhysicalProductRequest(
-                product=product,
-                user_campus_id=current_user.campus_id,
-                status=PhysicalProductRequestStatus.PENDING
-            )
-            await physical_request.save()
-            
-            await current_user.save()
-            request.session["success"] = f"已成功購買 '{product.name}'，實體商品申請已提交，等待管理員審核"
-            
-        elif product.product_type == ProductType.LEVEL_UP:
+        if product.product_type == ProductType.LEVEL_UP:
             # 等級提升道具：自動使用
             current_user.level += product.level_increase
             
@@ -205,7 +193,7 @@ async def mall_buy_product(
             request.session["success"] = f"已成功購買並使用 '{product.name}'，等級提升至 {current_user.level}"
             
         else:
-            # 標準商品或徽章：加入背包
+            # 標準商品、徽章或實體商品：加入背包
             # 檢查是否已有該商品
             existing_item = None
             for item_link in current_user.bag:
@@ -231,7 +219,10 @@ async def mall_buy_product(
                 current_user.bag.append(own_item)
             
             await current_user.save()
-            request.session["success"] = f"已成功購買 '{product.name}' 並加入背包"
+            if product.product_type == ProductType.PHYSICAL:
+                request.session["success"] = f"已成功購買 '{product.name}' 並加入背包，使用時將提交實體商品申請"
+            else:
+                request.session["success"] = f"已成功購買 '{product.name}' 並加入背包"
         
         return RedirectResponse(url=request.url_for("mall_index_page"), status_code=302)
         
