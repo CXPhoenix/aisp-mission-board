@@ -17,3 +17,6 @@ data/*[!.gitkeep]
 # for tailwindcss
 node_modules/
 *lock.yaml
+
+# for automation generate tailwindcss css file
+app/public/assets/style.css
