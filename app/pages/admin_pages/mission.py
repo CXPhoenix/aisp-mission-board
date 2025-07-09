@@ -216,14 +216,14 @@ async def mission_delete_action(
         # Remove from ongoing_missions
         if user.ongoing_missions:
             original_count = len(user.ongoing_missions)
-            user.ongoing_missions = [m for m in user.ongoing_missions if m.id != mission.id]
+            user.ongoing_missions = [m for m in user.ongoing_missions if m.ref.id != mission.id]
             if len(user.ongoing_missions) != original_count:
                 updated = True
         
         # Remove from completed_missions
         if user.completed_missions:
             original_count = len(user.completed_missions)
-            user.completed_missions = [m for m in user.completed_missions if m.id != mission.id]
+            user.completed_missions = [m for m in user.completed_missions if m.ref.id != mission.id]
             if len(user.completed_missions) != original_count:
                 updated = True
         
